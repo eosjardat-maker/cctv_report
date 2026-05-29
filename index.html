@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistem Laporan CCTV</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+      body {
+        background: white;
+      }
+    }
+    
+    /* STYLE KHUSUS MODE PDF */
+    .pdf-mode input, .pdf-mode textarea {
+      border: none !important;
+      padding: 0 !important;
+      background: transparent !important;
+      resize: none !important;
+      box-shadow: none !important;
+    }
+    .pdf-mode input::placeholder, .pdf-mode textarea::placeholder {
+      color: transparent !important;
+    }
+    .pdf-mode .no-print-pdf {
+      display: none !important;
+    }
+    .pdf-mode {
+      padding: 15px !important;
+      box-shadow: none !important;
+      font-size: 13px !important;
+      font-family: Arial, sans-serif !important;
+    }
+    .pdf-mode table th, .pdf-mode table td {
+      padding: 6px !important;
+    }
+    .pdf-mode .avoid-break {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+    /* Memastikan teks tanda tangan tetap rapi di tengah */
+    .pdf-mode .signature-input {
+      text-align: center !important;
+      border: none !important;
+      width: 100% !important;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-6">
+  <div class="max-w-7xl mx-auto">
+    <div class="bg-white rounded-3xl shadow-xl p-6 mb-6 no-print">
+      <h1 class="text-3xl font-bold mb-2">Sistem Laporan CCTV</h1>
+      <p class="text-gray-600">Laporan pekerjaan, dokumentasi, invoice, dan penawaran</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 no-print">
+      <button onclick="showTab('laporan')" class="bg-blue-600 text-white rounded-2xl p-4 font-semibold hover:bg-blue-700">Laporan</button>
+      <button onclick="showTab('dokumentasi')" class="bg-green-600 text-white rounded-2xl p-4 font-semibold hover:bg-green-700">Dokumentasi</button>
+      <button onclick="showTab('invoice')" class="bg-orange-600 text-white rounded-2xl p-4 font-semibold hover:bg-orange-700">Invoice</button>
+      <button onclick="showTab('penawaran')" class="bg-purple-600 text-white rounded-2xl p-4 font-semibold hover:bg-purple-700">Penawaran</button>
+    </div>
+
+    <div id="laporan" class="tab bg-white rounded-3xl shadow-xl p-6">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold">Laporan Pekerjaan CCTV</h2>
+        <div class="flex gap-2 no-print">
+          <button onclick="window.print()" class="bg-black text-white px-4 py-2 rounded-xl">Print</button>
+          <button onclick="downloadPDF('laporan', 'Laporan_Pekerjaan_CCTV')" class="bg-red-600 text-white px-4 py-2 rounded-xl hover:bg-red-700">Download PDF</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="font-semibold">Nama Client</label>
+          <input id="client" type="text" class="w-full border rounded-xl p-3 mt-1" placeholder="PT Contoh" />
+        </div>
+        <div>
+          <label class="font-semibold">Tanggal</label>
+          <input id="tanggal" type="date" class="w-full border rounded-xl p-3 mt-1" />
+        </div>
+        <div class="md:col-span-2">
+          <label class="font-semibold">Alamat Lokasi</label>
+          <textarea id="alamat" class="w-full border rounded-xl p-3 mt-1" rows="2"></textarea>
+        </div>
+        <div class="md:col-span-2">
+          <label class="font-semibold">Hasil Pekerjaan</label>
+          <textarea id="hasil" class="w-full border rounded-xl p-3 mt-1" rows="5" placeholder="Instalasi 8 kamera selesai, setting DVR, remote HP, dll"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div id="dokumentasi" class="tab hidden bg-white rounded-3xl shadow-xl p-6 mt-6">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold">Dokumentasi Pekerjaan</h2>
+        <div class="flex gap-2 no-print">
+          <button onclick="window.print()" class="bg-black text-white px-4 py-2 rounded-xl">Print</button>
+          <button onclick="downloadPDF('dokumentasi', 'Dokumentasi_CCTV')" class="bg-red-600 text-white px-4 py-2 rounded-xl hover:bg-red-700">Download PDF</button>
+        </div>
+      </div>
+      <input type="file" id="foto" multiple accept="image/*" class="mb-4 no-print" />
+      <div id="preview" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+    </div>
+
+    <div id="invoice" class="tab hidden bg-white rounded-3xl shadow-xl p-6 mt-6">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-bold text-orange-600 tracking-wide uppercase">Invoice Tagihan</h2>
+        <div class="flex gap-2 no-print no-print-pdf">
+          <button onclick="window.print()" class="bg-black text-white px-4 py-2 rounded-xl">Print</button>
+          <button onclick="downloadPDF('invoice', 'Invoice_CCTV')" class="bg-red-600 text-white px-4 py-2 rounded-xl hover:bg-red-700">Download PDF</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+        <div>
+          <label class="font-semibold text-xs text-gray-500 uppercase">Nama Customer</label>
+          <input type="text" class="w-full border rounded-xl p-2 mt-1 text-sm" placeholder="Nama customer" />
+        </div>
+        <div>
+          <label class="font-semibold text-xs text-gray-500 uppercase">No Invoice</label>
+          <input type="text" class="w-full border rounded-xl p-2 mt-1 text-sm" placeholder="INV-001" />
+        </div>
+        <div>
+          <label class="font-semibold text-xs text-gray-500 uppercase">Tanggal Invoice</label>
+          <input type="date" class="w-full border rounded-xl p-2 mt-1 text-sm" />
+        </div>
+        <div>
+          <label class="font-semibold text-xs text-gray-500 uppercase">Due Date</label>
+          <input type="date" class="w-full border rounded-xl p-2 mt-1 text-sm" />
+        </div>
+        <div>
+          <label class="font-semibold text-xs text-gray-500 uppercase">No. Kontrak</label>
+          <input type="text" class="w-full border rounded-xl p-2 mt-1 text-sm" placeholder="000/CTR/2026" />
+        </div>
+        <div>
+          <label class="font-semibold text-xs text-gray-500 uppercase">No. SPH</label>
+          <input type="text" class="w-full border rounded-xl p-2 mt-1 text-sm" placeholder="000/SPH/2026" />
+        </div>
+        <div class="col-span-2 md:col-span-3">
+          <label class="font-semibold text-xs text-gray-500 uppercase">Alamat Kantor</label>
+          <textarea class="w-full border rounded-xl p-2 mt-1 text-sm" rows="1" placeholder="Jl. Contoh No. 123, Kota ..."></textarea>
+        </div>
+      </div>
+
+      <table class="w-full border border-gray-300 mb-4 text-sm">
+        <thead>
+          <tr class="bg-gray-100 text-left">
+            <th class="border p-2">Deskripsi</th>
+            <th class="border p-2 w-16 text-center">Qty</th>
+            <th class="border p-2 w-32">Harga</th>
+            <th class="border p-2 w-32">Total</th>
+          </tr>
+        </thead>
+        <tbody id="invoiceBody">
+          <tr>
+            <td class="border p-1"><input type="text" class="w-full p-1 border rounded bg-white text-sm" value="Instalasi CCTV"></td>
+            <td class="border p-1"><input type="number" class="qty w-full p-1 border rounded bg-white text-center text-sm" value="1" onchange="hitungInvoice()"></td>
+            <td class="border p-1"><input type="number" class="harga w-full p-1 border rounded bg-white text-sm" value="2500000" onchange="hitungInvoice()"></td>
+            <td class="border p-1 total font-medium text-sm">Rp 2.500.000</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="flex justify-between items-center mb-4 no-print no-print-pdf">
+        <button onclick="tambahBarisInvoice()" class="bg-blue-600 text-white px-4 py-1.5 rounded-xl text-sm">Tambah Item</button>
+      </div>
+
+      <div class="avoid-break mt-4">
+        <table class="w-full border-none">
+          <tr>
+            <td class="w-7/12 align-top p-0 pr-4">
+              <div class="bg-gray-50 border border-gray-200 rounded-2xl p-3">
+                <h3 class="font-bold text-gray-700 text-xs mb-2 flex items-center gap-1">
+                  <span>ℹ️</span> Informasi Bank Pembayaran
+                </h3>
+                <table class="w-full text-xs border-none">
+                  <tr>
+                    <td class="p-1 text-gray-500 font-medium w-24">Nama Bank</td>
+                    <td class="p-1">: <input type="text" class="bg-transparent border-b border-gray-300 focus:outline-none w-10/12 font-semibold" placeholder="Bank BCA / Mandiri" /></td>
+                  </tr>
+                  <tr>
+                    <td class="p-1 text-gray-500 font-medium">No. Rekening</td>
+                    <td class="p-1">: <input type="text" class="bg-transparent border-b border-gray-300 focus:outline-none w-10/12 font-semibold" placeholder="123-456-7890" /></td>
+                  </tr>
+                  <tr>
+                    <td class="p-1 text-gray-500 font-medium">Atas Nama</td>
+                    <td class="p-1">: <input type="text" class="bg-transparent border-b border-gray-300 focus:outline-none w-10/12 font-semibold" placeholder="Nama Pemilik" /></td>
+                  </tr>
+                </table>
+              </div>
+            </td>
+            <td class="w-5/12 align-middle text-right p-0">
+              <div class="text-xl font-bold text-gray-800">
+                Total: <span id="grandTotal" class="text-orange-600">Rp 2.500.000</span>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="avoid-break mt-12">
+        <table class="w-full border-none">
+          <tr>
+            <td class="w-7/12 p-0"></td>
+            
+            <td class="w-5/12 p-0 text-center" style="vertical-align: top;">
+              <p class="font-semibold text-sm text-gray-700" style="margin-bottom: 75px; text-align: center;">Hormat Kami,</p>
+              <div style="width: 200px; margin: 0 auto; text-align: center;">
+                <input type="text" class="signature-input font-bold text-gray-800 text-sm" style="text-align: center; border-bottom: 1px solid #4b5563 !important; width: 100%; display: block; padding-bottom: 2px;" placeholder="( Nama Anda )" />
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <div id="penawaran" class="tab hidden bg-white rounded-3xl shadow-xl p-6 mt-6">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold">Surat Penawaran</h2>
+        <div class="flex gap-2 no-print">
+          <button onclick="window.print()" class="bg-black text-white px-4 py-2 rounded-xl">Print</button>
+          <button onclick="downloadPDF('penawaran', 'Surat_Penawaran_CCTV')" class="bg-red-600 text-white px-4 py-2 rounded-xl hover:bg-red-700">Download PDF</button>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label class="font-semibold">Kepada</label>
+        <input type="text" class="w-full border rounded-xl p-3 mt-1" placeholder="Nama perusahaan / customer" />
+      </div>
+      <div class="mb-4">
+        <label class="font-semibold">Isi Penawaran</label>
+        <textarea class="w-full border rounded-xl p-3 mt-1" rows="6">Kami menawarkan jasa instalasi CCTV lengkap dengan maintenance dan setting online monitoring.</textarea>
+      </div>
+
+      <table class="w-full border border-gray-300 mb-4">
+        <thead>
+          <tr class="bg-gray-100">
+            <th class="border p-3">Item</th>
+            <th class="border p-3">Qty</th>
+            <th class="border p-3">Harga</th>
+          </tr>
+        </thead>
+        <tbody id="penawaranBody">
+          <tr>
+            <td class="border p-2"><input type="text" class="w-full p-2 border rounded" value="Kamera CCTV 2MP"></td>
+            <td class="border p-2"><input type="number" class="w-full p-2 border rounded" value="4"></td>
+            <td class="border p-2"><input type="number" class="w-full p-2 border rounded" value="450000"></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <button onclick="tambahBarisPenawaran()" class="bg-purple-600 text-white px-4 py-2 rounded-xl no-print mb-12">Tambah Item Penawaran</button>
+
+      <div class="grid grid-cols-2 gap-4 mt-12 pt-6 border-t border-dashed">
+        <div class="text-center">
+          <p class="font-semibold mb-20">Disetujui Oleh,</p>
+          <input type="text" class="text-center border-b border-gray-400 focus:outline-none font-bold" placeholder="( Nama Client )" />
+        </div>
+        <div class="text-center">
+          <p class="font-semibold mb-20">Dibuat Oleh,</p>
+          <input type="text" class="text-center border-b border-gray-400 focus:outline-none font-bold" placeholder="( Nama Anda )" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function tambahBarisInvoice() {
+      const tbody = document.getElementById('invoiceBody');
+      const row = document.createElement('tr');
+
+      row.innerHTML = `
+        <td class="border p-1"><input type="text" class="w-full p-1 border rounded bg-white text-sm" placeholder="Deskripsi"></td>
+        <td class="border p-1"><input type="number" class="qty w-full p-1 border rounded bg-white text-center text-sm" value="1" onchange="hitungInvoice()"></td>
+        <td class="border p-1"><input type="number" class="harga w-full p-1 border rounded bg-white text-sm" value="0" onchange="hitungInvoice()"></td>
+        <td class="border p-1 total font-medium text-sm">Rp 0</td>
+      `;
+      tbody.appendChild(row);
+    }
+
+    function hitungInvoice() {
+      let grandTotal = 0;
+      document.querySelectorAll('#invoiceBody tr').forEach(row => {
+        const qty = parseFloat(row.querySelector('.qty').value) || 0;
+        const harga = parseFloat(row.querySelector('.harga').value) || 0;
+        const total = qty * harga;
+
+        row.querySelector('.total').innerText = 'Rp ' + total.toLocaleString('id-ID');
+        grandTotal += total;
+      });
+      document.getElementById('grandTotal').innerText = 'Rp ' + grandTotal.toLocaleString('id-ID');
+    }
+
+    function tambahBarisPenawaran() {
+      const tbody = document.getElementById('penawaranBody');
+      const row = document.createElement('tr');
+
+      row.innerHTML = `
+        <td class="border p-2"><input type="text" class="w-full p-2 border rounded" placeholder="Nama Item"></td>
+        <td class="border p-2"><input type="number" class="w-full p-2 border rounded" value="1"></td>
+        <td class="border p-2"><input type="number" class="w-full p-2 border rounded" value="0"></td>
+      `;
+      tbody.appendChild(row);
+    }
+
+    function showTab(tabId) {
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.add('hidden');
+      });
+      document.getElementById(tabId).classList.remove('hidden');
+    }
+
+    function downloadPDF(elementId, fileName) {
+      const element = document.getElementById(elementId);
+      element.classList.add('pdf-mode');
+
+      const opt = {
+        margin:       [10, 10, 10, 10], 
+        filename:     fileName + '.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, logging: false },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(element).save().then(() => {
+        element.classList.remove('pdf-mode');
+      }).catch((err) => {
+        console.error(err);
+        element.classList.remove('pdf-mode');
+      });
+    }
+
+    document.getElementById('foto').addEventListener('change', function(event) {
+      const preview = document.getElementById('preview');
+      preview.innerHTML = '';
+
+      Array.from(event.target.files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const div = document.createElement('div');
+          div.className = 'bg-gray-100 rounded-2xl overflow-hidden shadow';
+          div.innerHTML = `<img src="${e.target.result}" class="w-full h-64 object-cover" />`;
+          preview.appendChild(div);
+        }
+        reader.readAsDataURL(file);
+      });
+    });
+  </script>
+</body>
+</html>
