@@ -63,230 +63,229 @@
     }
   </style>
 </head>
-<body class="bg-gray-100 min-h-screen p-6">
+<body class="bg-gray-100 min-h-screen p-4 md:p-6">
   <div class="max-w-7xl mx-auto">
     
-    <div class="bg-white rounded-3xl shadow-xl p-6 mb-6 no-print">
-      <h1 class="text-3xl font-bold mb-2">Sistem Laporan CCTV</h1>
-      <p class="text-gray-600">Laporan pekerjaan, dokumentasi, invoice, dan penawaran</p>
+    <div class="bg-white rounded-2xl md:rounded-3xl shadow-md p-5 md:p-6 mb-6 no-print">
+      <h1 class="text-2xl md:text-3xl font-bold mb-1 md:mb-2 text-gray-800">Sistem Laporan CCTV</h1>
+      <p class="text-sm md:text-base text-gray-600">Laporan pekerjaan, dokumentasi, invoice, dan penawaran</p>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 no-print">
-      <button onclick="showTab('laporan')" class="bg-blue-600 text-white rounded-2xl p-4 font-semibold hover:bg-blue-700 transition">Laporan</button>
-      <button onclick="showTab('invoice')" class="bg-orange-600 text-white rounded-2xl p-4 font-semibold hover:bg-orange-700 transition">Invoice</button>
-      <button onclick="showTab('penawaran')" class="bg-purple-600 text-white rounded-2xl p-4 font-semibold hover:bg-purple-700 transition">Penawaran</button>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6 no-print">
+      <button onclick="showTab('laporan')" class="bg-blue-600 text-white rounded-xl md:rounded-2xl p-3 md:p-4 font-semibold hover:bg-blue-700 transition shadow-sm">Laporan Pekerjaan</button>
+      <button onclick="showTab('invoice')" class="bg-orange-600 text-white rounded-xl md:rounded-2xl p-3 md:p-4 font-semibold hover:bg-orange-700 transition shadow-sm">Invoice Tagihan</button>
+      <button onclick="showTab('penawaran')" class="bg-purple-600 text-white rounded-xl md:rounded-2xl p-3 md:p-4 font-semibold hover:bg-purple-700 transition shadow-sm">Surat Penawaran</button>
     </div>
 
-    <div id="laporan" class="tab bg-white rounded-3xl shadow-xl p-6">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-blue-600">Laporan Pekerjaan CCTV</h2>
-        <div class="flex gap-2 no-print no-print-pdf">
-          <button onclick="window.print()" class="bg-black text-white px-4 py-2 rounded-xl">Print</button>
-          <button onclick="downloadPDF('laporan', 'Laporan_Pekerjaan_CCTV')" class="bg-red-600 text-white px-4 py-2 rounded-xl hover:bg-red-700">Download PDF</button>
+    <div id="laporan" class="tab bg-white rounded-2xl md:rounded-3xl shadow-lg p-5 md:p-6">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <h2 class="text-xl md:text-2xl font-bold text-blue-600">Laporan Pekerjaan CCTV</h2>
+        <div class="flex gap-2 w-full sm:w-auto no-print no-print-pdf">
+          <button onclick="window.print()" class="flex-1 sm:flex-none bg-black text-white px-4 py-2 rounded-xl text-sm font-medium">Print</button>
+          <button onclick="downloadPDF('laporan', 'Laporan_Pekerjaan_CCTV')" class="flex-1 sm:flex-none bg-red-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-red-700 transition">Download PDF</button>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
         <div>
-          <label class="font-semibold">Nama Client</label>
-          <input id="client" type="text" class="w-full border rounded-xl p-3 mt-1" placeholder="PT Contoh" />
+          <label class="font-semibold text-sm md:text-base text-gray-700">Nama Client</label>
+          <input id="client" type="text" class="w-full border rounded-xl p-3 mt-1 text-sm md:text-base focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="PT Contoh" />
         </div>
         <div>
-          <label class="font-semibold">Tanggal</label>
-          <input id="tanggal" type="date" class="w-full border rounded-xl p-3 mt-1" />
+          <label class="font-semibold text-sm md:text-base text-gray-700">Tanggal</label>
+          <input id="tanggal" type="date" class="w-full border rounded-xl p-3 mt-1 text-sm md:text-base focus:ring-2 focus:ring-blue-500 focus:outline-none" />
         </div>
       </div>
 
       <div class="mt-8 avoid-break">
-        <h3 class="text-xl font-bold mb-4">Dokumentasi & Hasil Pekerjaan</h3>
+        <h3 class="text-lg md:text-xl font-bold mb-4 text-gray-800">Dokumentasi & Hasil Pekerjaan</h3>
         
-        <table class="w-full border border-gray-300 text-sm mb-4">
+        <div class="overflow-x-auto min-w-full inline-block align-middle">
+          <table class="w-full border border-gray-300 text-sm mb-4 min-w-[600px]">
+            <thead>
+              <tr class="bg-gray-100 text-left">
+                <th class="border p-3 w-5/12 text-gray-700 font-semibold">Hasil / Keterangan Pekerjaan</th>
+                <th class="border p-3 w-7/12 text-gray-700 font-semibold">Foto Dokumentasi</th>
+              </tr>
+            </thead>
+            <tbody id="dokumentasiBody">
+              <tr class="avoid-break">
+                <td class="border p-3 align-top">
+                  <textarea class="keterangan-foto-input w-full p-2 border rounded-xl bg-white focus:outline-none text-sm" rows="4" placeholder="Contoh: Instalasi Kamera 1 sisi koridor barat utama, penarikan kabel coaxial 15 meter..." oninput="updateKeteranganText(this)"></textarea>
+                  <p class="keterangan-foto-text whitespace-pre-line"></p>
+                </td>
+                <td class="border p-3 align-top">
+                  <input type="file" accept="image/*" class="no-print no-print-pdf mb-2 block text-xs" onchange="previewFotoBaris(this)" />
+                  <div class="img-container hidden bg-gray-900 rounded-xl overflow-hidden w-full h-48 md:h-64 flex items-center justify-center shadow">
+                    <img src="" class="w-full h-full object-contain" />
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="no-print no-print-pdf mt-2">
+          <button onclick="tambahBarisDokumentasi()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-blue-700 transition">Tambah Baris Dokumentasi</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="invoice" class="tab hidden bg-white rounded-2xl md:rounded-3xl shadow-lg p-5 md:p-6">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+        <h2 class="text-xl md:text-2xl font-bold text-orange-600 tracking-wide uppercase">Invoice Tagihan</h2>
+        <div class="flex gap-2 w-full sm:w-auto no-print no-print-pdf">
+          <button onclick="window.print()" class="flex-1 sm:flex-none bg-black text-white px-4 py-2 rounded-xl text-sm font-medium">Print</button>
+          <button onclick="downloadPDF('invoice', 'Invoice_CCTV')" class="flex-1 sm:flex-none bg-red-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-red-700 transition">Download PDF</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+        <div>
+          <label class="font-semibold text-xs text-gray-500 uppercase">Nama Customer</label>
+          <input type="text" class="w-full border rounded-xl p-2 mt-1 text-sm focus:outline-none focus:ring-1 focus:ring-orange-500" placeholder="Nama customer" />
+        </div>
+        <div>
+          <label class="font-semibold text-xs text-gray-500 uppercase">No Invoice</label>
+          <input type="text" class="w-full border rounded-xl p-2 mt-1 text-sm focus:outline-none focus:ring-1 focus:ring-orange-500" placeholder="INV-001" />
+        </div>
+        <div>
+          <label class="font-semibold text-xs text-gray-500 uppercase">Tanggal Invoice</label>
+          <input type="date" class="w-full border rounded-xl p-2 mt-1 text-sm focus:outline-none focus:ring-1 focus:ring-orange-500" />
+        </div>
+        <div>
+          <label class="font-semibold text-xs text-gray-500 uppercase">Due Date</label>
+          <input type="date" class="w-full border rounded-xl p-2 mt-1 text-sm focus:outline-none focus:ring-1 focus:ring-orange-500" />
+        </div>
+        <div>
+          <label class="font-semibold text-xs text-gray-500 uppercase">No. Kontrak</label>
+          <input type="text" class="w-full border rounded-xl p-2 mt-1 text-sm focus:outline-none focus:ring-1 focus:ring-orange-500" placeholder="000/CTR/2026" />
+        </div>
+        <div>
+          <label class="font-semibold text-xs text-gray-500 uppercase">No. SPH</label>
+          <input type="text" class="w-full border rounded-xl p-2 mt-1 text-sm focus:outline-none focus:ring-1 focus:ring-orange-500" placeholder="000/SPH/2026" />
+        </div>
+        <div class="col-span-1 sm:col-span-2 md:col-span-3">
+          <label class="font-semibold text-xs text-gray-500 uppercase">Alamat Kantor</label>
+          <textarea class="w-full border rounded-xl p-2 mt-1 text-sm focus:outline-none focus:ring-1 focus:ring-orange-500" rows="1" placeholder="Jl. Contoh No. 123, Kota ..."></textarea>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full border border-gray-300 mb-4 text-sm min-w-[600px]">
           <thead>
             <tr class="bg-gray-100 text-left">
-              <th class="border p-3 w-5/12">Hasil / Keterangan Pekerjaan</th>
-              <th class="border p-3 w-7/12">Foto Dokumentasi</th>
+              <th class="border p-2 text-gray-700">Deskripsi</th>
+              <th class="border p-2 w-16 text-center text-gray-700">Qty</th>
+              <th class="border p-2 w-32 text-gray-700">Harga</th>
+              <th class="border p-2 w-32 text-gray-700">Total</th>
+              <th class="border p-2 w-12 text-center no-print no-print-pdf text-gray-700">Aksi</th>
             </tr>
           </thead>
-          <tbody id="dokumentasiBody">
-            <tr class="avoid-break">
-              <td class="border p-3 align-top">
-                <textarea class="keterangan-foto-input w-full p-2 border rounded-xl bg-white focus:outline-none" rows="4" placeholder="Contoh: Instalasi Kamera 1 sisi koridor barat utama, penarikan kabel coaxial 15 meter..." oninput="updateKeteranganText(this)"></textarea>
-                <p class="keterangan-foto-text whitespace-pre-line"></p>
-              </td>
-              <td class="border p-3 align-top">
-                <input type="file" accept="image/*" class="no-print no-print-pdf mb-2 block text-xs" onchange="previewFotoBaris(this)" />
-                <div class="img-container hidden bg-gray-900 rounded-xl overflow-hidden w-full h-64 flex items-center justify-center shadow">
-                  <img src="" class="w-full h-full object-contain" />
-                </div>
+          <tbody id="invoiceBody">
+            <tr>
+              <td class="border p-1"><input type="text" class="w-full p-1 border rounded bg-white text-sm" value="Instalasi CCTV"></td>
+              <td class="border p-1"><input type="number" class="qty w-full p-1 border rounded bg-white text-center text-sm" value="1" onchange="hitungInvoice()"></td>
+              <td class="border p-1"><input type="number" class="harga w-full p-1 border rounded bg-white text-sm" value="2500000" onchange="hitungInvoice()"></td>
+              <td class="border p-1 total font-medium text-sm text-gray-800">Rp 2.500.000</td>
+              <td class="border p-1 text-center no-print no-print-pdf">
+                <button onclick="hapusBarisItem(this, 'invoice')" class="text-red-500 hover:text-red-700 font-bold text-base">🗑️</button>
               </td>
             </tr>
           </tbody>
         </table>
-
-        <div class="no-print no-print-pdf">
-          <button onclick="tambahBarisDokumentasi()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-blue-700">Tambah Baris Dokumentasi</button>
-        </div>
       </div>
-    </div>
-
-    <div id="invoice" class="tab hidden bg-white rounded-3xl shadow-xl p-6">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-2xl font-bold text-orange-600 tracking-wide uppercase">Invoice Tagihan</h2>
-        <div class="flex gap-2 no-print no-print-pdf">
-          <button onclick="window.print()" class="bg-black text-white px-4 py-2 rounded-xl">Print</button>
-          <button onclick="downloadPDF('invoice', 'Invoice_CCTV')" class="bg-red-600 text-white px-4 py-2 rounded-xl hover:bg-red-700">Download PDF</button>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
-        <div>
-          <label class="font-semibold text-xs text-gray-500 uppercase">Nama Customer</label>
-          <input type="text" class="w-full border rounded-xl p-2 mt-1 text-sm" placeholder="Nama customer" />
-        </div>
-        <div>
-          <label class="font-semibold text-xs text-gray-500 uppercase">No Invoice</label>
-          <input type="text" class="w-full border rounded-xl p-2 mt-1 text-sm" placeholder="INV-001" />
-        </div>
-        <div>
-          <label class="font-semibold text-xs text-gray-500 uppercase">Tanggal Invoice</label>
-          <input type="date" class="w-full border rounded-xl p-2 mt-1 text-sm" />
-        </div>
-        <div>
-          <label class="font-semibold text-xs text-gray-500 uppercase">Due Date</label>
-          <input type="date" class="w-full border rounded-xl p-2 mt-1 text-sm" />
-        </div>
-        <div>
-          <label class="font-semibold text-xs text-gray-500 uppercase">No. Kontrak</label>
-          <input type="text" class="w-full border rounded-xl p-2 mt-1 text-sm" placeholder="000/CTR/2026" />
-        </div>
-        <div>
-          <label class="font-semibold text-xs text-gray-500 uppercase">No. SPH</label>
-          <input type="text" class="w-full border rounded-xl p-2 mt-1 text-sm" placeholder="000/SPH/2026" />
-        </div>
-        <div class="col-span-2 md:col-span-3">
-          <label class="font-semibold text-xs text-gray-500 uppercase">Alamat Kantor</label>
-          <textarea class="w-full border rounded-xl p-2 mt-1 text-sm" rows="1" placeholder="Jl. Contoh No. 123, Kota ..."></textarea>
-        </div>
-      </div>
-
-      <table class="w-full border border-gray-300 mb-4 text-sm">
-        <thead>
-          <tr class="bg-gray-100 text-left">
-            <th class="border p-2">Deskripsi</th>
-            <th class="border p-2 w-16 text-center">Qty</th>
-            <th class="border p-2 w-32">Harga</th>
-            <th class="border p-2 w-32">Total</th>
-            <th class="border p-2 w-12 text-center no-print no-print-pdf">Aksi</th>
-          </tr>
-        </thead>
-        <tbody id="invoiceBody">
-          <tr>
-            <td class="border p-1"><input type="text" class="w-full p-1 border rounded bg-white text-sm" value="Instalasi CCTV"></td>
-            <td class="border p-1"><input type="number" class="qty w-full p-1 border rounded bg-white text-center text-sm" value="1" onchange="hitungInvoice()"></td>
-            <td class="border p-1"><input type="number" class="harga w-full p-1 border rounded bg-white text-sm" value="2500000" onchange="hitungInvoice()"></td>
-            <td class="border p-1 total font-medium text-sm">Rp 2.500.000</td>
-            <td class="border p-1 text-center no-print no-print-pdf">
-              <button onclick="hapusBarisItem(this, 'invoice')" class="text-red-500 hover:text-red-700 font-bold text-base">🗑️</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
 
       <div class="flex justify-between items-center mb-4 no-print no-print-pdf">
-        <button onclick="tambahBarisInvoice()" class="bg-blue-600 text-white px-4 py-1.5 rounded-xl text-sm">Tambah Item</button>
+        <button onclick="tambahBarisInvoice()" class="bg-blue-600 text-white px-4 py-1.5 rounded-xl text-sm font-medium shadow-sm">Tambah Item</button>
       </div>
 
-      <div class="avoid-break mt-4">
-        <table class="w-full border-none">
-          <tr>
-            <td class="w-7/12 align-top p-0 pr-4">
-              <div class="bg-gray-50 border border-gray-200 rounded-2xl p-3">
-                <h3 class="font-bold text-gray-700 text-xs mb-2 flex items-center gap-1">
-                  <span>ℹ️</span> Informasi Bank Pembayaran
-                </h3>
-                <table class="w-full text-xs border-none">
-                  <tr>
-                    <td class="p-1 text-gray-500 font-medium w-24">Nama Bank</td>
-                    <td class="p-1">: <input type="text" class="bg-transparent border-b border-gray-300 focus:outline-none w-10/12 font-semibold" placeholder="Bank BCA / Mandiri" /></td>
-                  </tr>
-                  <tr>
-                    <td class="p-1 text-gray-500 font-medium">No. Rekening</td>
-                    <td class="p-1">: <input type="text" class="bg-transparent border-b border-gray-300 focus:outline-none w-10/12 font-semibold" placeholder="123-456-7890" /></td>
-                  </tr>
-                  <tr>
-                    <td class="p-1 text-gray-500 font-medium">Atas Nama</td>
-                    <td class="p-1">: <input type="text" class="bg-transparent border-b border-gray-300 focus:outline-none w-10/12 font-semibold" placeholder="Nama Pemilik" /></td>
-                  </tr>
-                </table>
-              </div>
-            </td>
-            <td class="w-5/12 align-middle text-right p-0">
-              <div class="text-xl font-bold text-gray-800">
-                Total: <span id="grandTotal" class="text-orange-600">Rp 2.500.000</span>
-              </div>
-            </td>
-          </tr>
-        </table>
+      <div class="avoid-break mt-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
+          <div class="w-full sm:w-7/12 bg-gray-50 border border-gray-200 rounded-2xl p-3">
+            <h3 class="font-bold text-gray-700 text-xs mb-2 flex items-center gap-1">
+              <span>ℹ️</span> Informasi Bank Pembayaran
+            </h3>
+            <table class="w-full text-xs border-none">
+              <tr>
+                <td class="p-1 text-gray-500 font-medium w-24">Nama Bank</td>
+                <td class="p-1">: <input type="text" class="bg-transparent border-b border-gray-300 focus:outline-none w-10/12 font-semibold text-gray-800" placeholder="Bank BCA / Mandiri" /></td>
+              </tr>
+              <tr>
+                <td class="p-1 text-gray-500 font-medium">No. Rekening</td>
+                <td class="p-1">: <input type="text" class="bg-transparent border-b border-gray-300 focus:outline-none w-10/12 font-semibold text-gray-800" placeholder="123-456-7890" /></td>
+              </tr>
+              <tr>
+                <td class="p-1 text-gray-500 font-medium">Atas Nama</td>
+                <td class="p-1">: <input type="text" class="bg-transparent border-b border-gray-300 focus:outline-none w-10/12 font-semibold text-gray-800" placeholder="Nama Pemilik" /></td>
+              </tr>
+            </table>
+          </div>
+          <div class="w-full sm:w-5/12 text-left sm:text-right self-center">
+            <div class="text-xl font-bold text-gray-800">
+              Total: <span id="grandTotal" class="text-orange-600">Rp 2.500.000</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="avoid-break mt-12">
-        <table class="w-full border-none">
-          <tr>
-            <td class="w-7/12 p-0"></td>
-            <td class="w-5/12 p-0 text-center" style="vertical-align: top;">
-              <p class="font-semibold text-sm text-gray-700" style="margin-bottom: 75px; text-align: center;">Hormat Kami,</p>
-              <div style="width: 200px; margin: 0 auto; text-align: center;">
-                <input type="text" class="signature-input font-bold text-gray-800 text-sm" style="text-align: center; border-bottom: 1px solid #4b5563 !important; width: 100%; display: block; padding-bottom: 2px;" placeholder="( Nama Anda )" />
-              </div>
-            </td>
-          </tr>
-        </table>
+        <div class="flex justify-end">
+          <div class="w-full sm:w-5/12 text-center">
+            <p class="font-semibold text-sm text-gray-700 mb-16">Hormat Kami,</p>
+            <div class="w-48 mx-auto">
+              <input type="text" class="signature-input font-bold text-gray-800 text-sm text-center border-b border-gray-400 focus:outline-none w-full pb-1" placeholder="( Nama Anda )" />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div id="penawaran" class="tab hidden bg-white rounded-3xl shadow-xl p-6">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-purple-600">Surat Penawaran</h2>
-        <div class="flex gap-2 no-print no-print-pdf">
-          <button onclick="window.print()" class="bg-black text-white px-4 py-2 rounded-xl">Print</button>
-          <button onclick="downloadPDF('penawaran', 'Surat_Penawaran_CCTV')" class="bg-red-600 text-white px-4 py-2 rounded-xl hover:bg-red-700">Download PDF</button>
+    <div id="penawaran" class="tab hidden bg-white rounded-2xl md:rounded-3xl shadow-lg p-5 md:p-6">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <h2 class="text-xl md:text-2xl font-bold text-purple-600">Surat Penawaran</h2>
+        <div class="flex gap-2 w-full sm:w-auto no-print no-print-pdf">
+          <button onclick="window.print()" class="flex-1 sm:flex-none bg-black text-white px-4 py-2 rounded-xl text-sm font-medium">Print</button>
+          <button onclick="downloadPDF('penawaran', 'Surat_Penawaran_CCTV')" class="flex-1 sm:flex-none bg-red-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-red-700 transition">Download PDF</button>
         </div>
       </div>
 
       <div class="mb-4">
-        <label class="font-semibold">Kepada</label>
-        <input type="text" class="w-full border rounded-xl p-3 mt-1" placeholder="Nama perusahaan / customer" />
+        <label class="font-semibold text-gray-700 text-sm md:text-base">Kepada</label>
+        <input type="text" class="w-full border rounded-xl p-3 mt-1 text-sm focus:outline-none focus:ring-1 focus:ring-purple-500" placeholder="Nama perusahaan / customer" />
       </div>
       <div class="mb-4">
-        <label class="font-semibold">Isi Penawaran</label>
-        <textarea class="w-full border rounded-xl p-3 mt-1" rows="6">Kami menawarkan jasa instalasi CCTV lengkap dengan maintenance dan setting online monitoring.</textarea>
+        <label class="font-semibold text-gray-700 text-sm md:text-base">Isi Penawaran</label>
+        <textarea class="w-full border rounded-xl p-3 mt-1 text-sm focus:outline-none focus:ring-1 focus:ring-purple-500" rows="4">Kami menawarkan jasa instalasi CCTV lengkap dengan maintenance dan setting online monitoring.</textarea>
       </div>
 
-      <table class="w-full border border-gray-300 mb-4 text-sm">
-        <thead>
-          <tr class="bg-gray-100 text-left">
-            <th class="border p-3">Item Deskripsi</th>
-            <th class="border p-3 w-20 text-center">Qty</th>
-            <th class="border p-3 w-36">Harga Satuan</th>
-            <th class="border p-3 w-36">Total Harga</th>
-            <th class="border p-3 w-12 text-center no-print no-print-pdf">Aksi</th>
-          </tr>
-        </thead>
-        <tbody id="penawaranBody">
-          <tr>
-            <td class="border p-1"><input type="text" class="w-full p-1 border rounded bg-white" value="Kamera CCTV 2MP"></td>
-            <td class="border p-1"><input type="number" class="pwn-qty w-full p-1 border rounded bg-white text-center" value="4" onchange="hitungPenawaran()"></td>
-            <td class="border p-1"><input type="number" class="pwn-harga w-full p-1 border rounded bg-white" value="450000" onchange="hitungPenawaran()"></td>
-            <td class="border p-1 pwn-total font-medium">Rp 1.800.000</td>
-            <td class="border p-1 text-center no-print no-print-pdf">
-              <button onclick="hapusBarisItem(this, 'penawaran')" class="text-red-500 hover:text-red-700 font-bold text-base">🗑️</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="overflow-x-auto">
+        <table class="w-full border border-gray-300 mb-4 text-sm min-w-[600px]">
+          <thead>
+            <tr class="bg-gray-100 text-left">
+              <th class="border p-3 text-gray-700">Item Deskripsi</th>
+              <th class="border p-3 w-20 text-center text-gray-700">Qty</th>
+              <th class="border p-3 w-36 text-gray-700">Harga Satuan</th>
+              <th class="border p-3 w-36 text-gray-700">Total Harga</th>
+              <th class="border p-3 w-12 text-center no-print no-print-pdf text-gray-700">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="penawaranBody">
+            <tr>
+              <td class="border p-1"><input type="text" class="w-full p-1 border rounded bg-white text-sm" value="Kamera CCTV 2MP"></td>
+              <td class="border p-1"><input type="number" class="pwn-qty w-full p-1 border rounded bg-white text-center text-sm" value="4" onchange="hitungPenawaran()"></td>
+              <td class="border p-1"><input type="number" class="pwn-harga w-full p-1 border rounded bg-white text-sm" value="450000" onchange="hitungPenawaran()"></td>
+              <td class="border p-1 pwn-total font-medium text-gray-800 text-sm">Rp 1.800.000</td>
+              <td class="border p-1 text-center no-print no-print-pdf">
+                <button onclick="hapusBarisItem(this, 'penawaran')" class="text-red-500 hover:text-red-700 font-bold text-base">🗑️</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
       <div class="flex justify-between items-center mb-6 no-print no-print-pdf">
-        <button onclick="tambahBarisPenawaran()" class="bg-purple-600 text-white px-4 py-1.5 rounded-xl text-sm font-semibold hover:bg-purple-700">Tambah Item Penawaran</button>
+        <button onclick="tambahBarisPenawaran()" class="bg-purple-600 text-white px-4 py-1.5 rounded-xl text-sm font-semibold hover:bg-purple-700 transition">Tambah Item Penawaran</button>
       </div>
 
       <div class="avoid-break flex justify-end items-center mb-8">
@@ -295,14 +294,14 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-2 gap-4 mt-12 pt-6 border-t border-dashed avoid-break">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-12 pt-6 border-t border-dashed avoid-break">
         <div class="text-center">
-          <p class="font-semibold mb-20">Disetujui Oleh,</p>
-          <input type="text" class="text-center border-b border-gray-400 focus:outline-none font-bold bg-transparent" placeholder="( Nama Client )" />
+          <p class="font-semibold text-sm text-gray-700 mb-16">Disetujui Oleh,</p>
+          <input type="text" class="text-center border-b border-gray-400 focus:outline-none font-bold bg-transparent text-sm w-48 pb-1 mx-auto block" placeholder="( Nama Client )" />
         </div>
         <div class="text-center">
-          <p class="font-semibold mb-20">Dibuat Oleh,</p>
-          <input type="text" class="text-center border-b border-gray-400 focus:outline-none font-bold bg-transparent" placeholder="( Nama Anda )" />
+          <p class="font-semibold text-sm text-gray-700 mb-16">Dibuat Oleh,</p>
+          <input type="text" class="text-center border-b border-gray-400 focus:outline-none font-bold bg-transparent text-sm w-48 pb-1 mx-auto block" placeholder="( Nama Anda )" />
         </div>
       </div>
     </div>
@@ -318,12 +317,12 @@
       
       tr.innerHTML = `
         <td class="border p-3 align-top">
-          <textarea class="keterangan-foto-input w-full p-2 border rounded-xl bg-white focus:outline-none" rows="4" placeholder="Tulis hasil pekerjaan atau deskripsi foto di sini..." oninput="updateKeteranganText(this)"></textarea>
+          <textarea class="keterangan-foto-input w-full p-2 border rounded-xl bg-white focus:outline-none text-sm" rows="4" placeholder="Tulis hasil pekerjaan atau deskripsi foto di sini..." oninput="updateKeteranganText(this)"></textarea>
           <p class="keterangan-foto-text whitespace-pre-line"></p>
         </td>
         <td class="border p-3 align-top">
           <input type="file" accept="image/*" class="no-print no-print-pdf mb-2 block text-xs" onchange="previewFotoBaris(this)" />
-          <div class="img-container hidden bg-gray-900 rounded-xl overflow-hidden w-full h-64 flex items-center justify-center shadow">
+          <div class="img-container hidden bg-gray-900 rounded-xl overflow-hidden w-full h-48 md:h-64 flex items-center justify-center shadow">
             <img src="" class="w-full h-full object-contain" />
           </div>
         </td>
@@ -363,9 +362,26 @@
         <td class="border p-1"><input type="text" class="w-full p-1 border rounded bg-white text-sm" placeholder="Deskripsi"></td>
         <td class="border p-1"><input type="number" class="qty w-full p-1 border rounded bg-white text-center text-sm" value="1" onchange="hitungInvoice()"></td>
         <td class="border p-1"><input type="number" class="harga w-full p-1 border rounded bg-white text-sm" value="0" onchange="hitungInvoice()"></td>
-        <td class="border p-1 total font-medium text-sm">Rp 0</td>
+        <td class="border p-1 total font-medium text-sm text-gray-800">Rp 0</td>
         <td class="border p-1 text-center no-print no-print-pdf">
           <button onclick="hapusBarisItem(this, 'invoice')" class="text-red-500 hover:text-red-700 font-bold text-base">🗑️</button>
+        </td>
+      `;
+      tbody.appendChild(row);
+    }
+
+    // Fungsi Penawaran
+    function tambahBarisPenawaran() {
+      const tbody = document.getElementById('penawaranBody');
+      const row = document.createElement('tr');
+
+      row.innerHTML = `
+        <td class="border p-1"><input type="text" class="w-full p-1 border rounded bg-white text-sm" placeholder="Nama Item"></td>
+        <td class="border p-1"><input type="number" class="pwn-qty w-full p-1 border rounded bg-white text-center text-sm" value="1" onchange="hitungPenawaran()"></td>
+        <td class="border p-1"><input type="number" class="pwn-harga w-full p-1 border rounded bg-white text-sm" value="0" onchange="hitungPenawaran()"></td>
+        <td class="border p-1 pwn-total font-medium text-gray-800 text-sm">Rp 0</td>
+        <td class="border p-1 text-center no-print no-print-pdf">
+          <button onclick="hapusBarisItem(this, 'penawaran')" class="text-red-500 hover:text-red-700 font-bold text-base">🗑️</button>
         </td>
       `;
       tbody.appendChild(row);
@@ -382,23 +398,6 @@
         grandTotal += total;
       });
       document.getElementById('grandTotal').innerText = 'Rp ' + grandTotal.toLocaleString('id-ID');
-    }
-
-    // Fungsi Penawaran
-    function tambahBarisPenawaran() {
-      const tbody = document.getElementById('penawaranBody');
-      const row = document.createElement('tr');
-
-      row.innerHTML = `
-        <td class="border p-1"><input type="text" class="w-full p-1 border rounded bg-white" placeholder="Nama Item"></td>
-        <td class="border p-1"><input type="number" class="pwn-qty w-full p-1 border rounded bg-white text-center" value="1" onchange="hitungPenawaran()"></td>
-        <td class="border p-1"><input type="number" class="pwn-harga w-full p-1 border rounded bg-white" value="0" onchange="hitungPenawaran()"></td>
-        <td class="border p-1 pwn-total font-medium">Rp 0</td>
-        <td class="border p-1 text-center no-print no-print-pdf">
-          <button onclick="hapusBarisItem(this, 'penawaran')" class="text-red-500 hover:text-red-700 font-bold text-base">🗑️</button>
-        </td>
-      `;
-      tbody.appendChild(row);
     }
 
     function hitungPenawaran() {
@@ -419,11 +418,8 @@
       const row = button.closest('tr');
       const tbody = row.parentNode;
       
-      // Mencegah penghapusan jika baris hanya tersisa 1
       if (tbody.querySelectorAll('tr').length > 1) {
         row.remove();
-        
-        // Hitung ulang total setelah baris dihapus
         if (jenisTab === 'invoice') {
           hitungInvoice();
         } else if (jenisTab === 'penawaran') {
