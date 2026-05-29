@@ -8,11 +8,16 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     @media print {
-      .no-print {
-        display: none !important;
+      /* Menyembunyikan header/footer bawaan browser (seperti lokasi file Disk C / URL) */
+      @page { 
+        margin: 0; 
       }
       body {
         background: white;
+        padding: 10mm; /* Memberikan margin manual agar konten tidak terpotong */
+      }
+      .no-print {
+        display: none !important;
       }
     }
     
@@ -68,7 +73,7 @@
     <div id="laporan" class="tab bg-white rounded-3xl shadow-xl p-6">
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold">Laporan Pekerjaan CCTV</h2>
-        <div class="flex gap-2 no-print">
+        <div class="flex gap-2 no-print no-print-pdf">
           <button onclick="window.print()" class="bg-black text-white px-4 py-2 rounded-xl">Print</button>
           <button onclick="downloadPDF('laporan', 'Laporan_Pekerjaan_CCTV')" class="bg-red-600 text-white px-4 py-2 rounded-xl hover:bg-red-700">Download PDF</button>
         </div>
@@ -97,7 +102,7 @@
     <div id="dokumentasi" class="tab hidden bg-white rounded-3xl shadow-xl p-6 mt-6">
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold">Dokumentasi Pekerjaan</h2>
-        <div class="flex gap-2 no-print">
+        <div class="flex gap-2 no-print no-print-pdf">
           <button onclick="window.print()" class="bg-black text-white px-4 py-2 rounded-xl">Print</button>
           <button onclick="downloadPDF('dokumentasi', 'Dokumentasi_CCTV')" class="bg-red-600 text-white px-4 py-2 rounded-xl hover:bg-red-700">Download PDF</button>
         </div>
@@ -221,7 +226,7 @@
     <div id="penawaran" class="tab hidden bg-white rounded-3xl shadow-xl p-6 mt-6">
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold">Surat Penawaran</h2>
-        <div class="flex gap-2 no-print">
+        <div class="flex gap-2 no-print no-print-pdf">
           <button onclick="window.print()" class="bg-black text-white px-4 py-2 rounded-xl">Print</button>
           <button onclick="downloadPDF('penawaran', 'Surat_Penawaran_CCTV')" class="bg-red-600 text-white px-4 py-2 rounded-xl hover:bg-red-700">Download PDF</button>
         </div>
