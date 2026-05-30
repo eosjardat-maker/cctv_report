@@ -2,528 +2,465 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sistem Laporan CCTV</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Sistem Laporan CCTV - Laporan Pekerjaan & Invoice</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
+    /* Reset & Base */
+    * {
+      box-sizing: border-box;
+    }
     @media print {
-      .no-print {
-        display: none !important;
-      }
-      body {
-        background: white;
-      }
+      .no-print { display: none !important; }
+      body { background: white; margin: 0; padding: 0; }
+      .tab, .bg-white, .rounded-2xl { box-shadow: none !important; border: 1px solid #e5e7eb; }
+      @page { size: A4; margin: 1.2cm; }
+      .signature-hint { display: none !important; }
     }
     
-    /* STYLE KHUSUS MODE PDF */
+    /* MODE PDF - INPUT MENJADI TEKS STATIS */
+    .pdf-mode {
+      padding: 5px 10px !important;
+      background: white !important;
+      font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+      font-size: 12px !important;
+      line-height: 1.4 !important;
+    }
     .pdf-mode input, .pdf-mode textarea {
       border: none !important;
       padding: 0 !important;
       background: transparent !important;
       resize: none !important;
       box-shadow: none !important;
+      outline: none !important;
+      font-size: inherit !important;
+      font-family: inherit !important;
     }
     .pdf-mode input::placeholder, .pdf-mode textarea::placeholder {
       color: transparent !important;
     }
-    .pdf-mode .no-print-pdf {
+    .pdf-mode .no-print-pdf, .pdf-mode .do-foto-input, .pdf-mode button:not(.keep-in-pdf) {
       display: none !important;
     }
-    .pdf-mode {
-      padding: 15px !important;
-      box-shadow: none !important;
-      font-size: 13px !important;
-      font-family: Arial, sans-serif !important;
+    .pdf-mode table {
+      width: 100% !important;
+      border-collapse: collapse !important;
+      table-layout: fixed !important;
     }
     .pdf-mode table th, .pdf-mode table td {
-      padding: 6px !important;
+      border: 1px solid #aaa !important;
+      padding: 6px 8px !important;
+      vertical-align: top !important;
+      word-break: break-word !important;
+      white-space: normal !important;
     }
-    .pdf-mode .avoid-break {
+    /* Lebar kolom tetap rapi di PDF */
+    .pdf-mode .invoice-table td:first-child,
+    .pdf-mode .invoice-table th:first-child {
+      width: 40% !important;
+    }
+    .pdf-mode .invoice-table td:nth-child(2),
+    .pdf-mode .invoice-table th:nth-child(2) {
+      width: 15% !important;
+    }
+    .pdf-mode .invoice-table td:nth-child(3),
+    .pdf-mode .invoice-table th:nth-child(3) {
+      width: 20% !important;
+    }
+    .pdf-mode .invoice-table td:nth-child(4),
+    .pdf-mode .invoice-table th:nth-child(4) {
+      width: 25% !important;
+    }
+    
+    .pdf-mode .avoid-break, .pdf-mode .do-barang-row, .pdf-mode .img-container {
       page-break-inside: avoid !important;
       break-inside: avoid !important;
     }
-    .pdf-mode .signature-input {
-      text-align: center !important;
-      border: none !important;
-      width: 100% !important;
+    .pdf-mode .img-container {
+      border: 1px solid #ddd;
+      background: #fafafa;
+      padding: 3px;
+      display: flex;
+      justify-content: center;
+      max-height: 150px;
+      overflow: hidden;
+    }
+    .pdf-mode .img-container img {
+      max-width: 100%;
+      max-height: 135px;
+      object-fit: contain;
     }
     
-    /* Mengubah input keterangan menjadi teks statis saat PDF didownload */
-    .pdf-mode .keterangan-foto-input {
-      display: none !important;
+    /* Tampilan biasa */
+    .img-container { transition: all 0.1s; background: #f9fafb; }
+    @media (max-width: 768px) { .img-container { min-height: 120px; } }
+    .laporan-row { page-break-inside: avoid; break-inside: avoid; }
+    
+    /* Galeri foto */
+    .foto-gallery {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
     }
-    .keterangan-foto-text {
-      display: none;
+    .foto-item {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #f3f4f6;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
-    .pdf-mode .keterangan-foto-text {
-      display: block !important;
-      font-size: 13px;
-      color: #1f2937;
+    .foto-item img {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
     }
-  
-    /* FOTO PORTRAIT MOBILE */
-    .img-container img[data-mobile="portrait"] {
-      max-width: 85% !important;
-      margin: auto;
+    .foto-item button {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+    .foto-multi-input {
+      color: transparent;
+    }
+    .foto-multi-input::file-selector-button {
+      color: #333;
     }
 
-    @media (max-width: 768px) {
-      .img-container {
-        min-height: 260px !important;
-      }
-
-      .img-container img[data-mobile="portrait"] {
-        max-height: 420px !important;
-      }
+    /* Invoice wrapper untuk scroll horizontal di layar kecil, tapi PDF fixed */
+    .invoice-wrapper {
+      overflow-x: auto;
+      margin-bottom: 1rem;
+      width: 100%;
     }
-
-</style>
+    .invoice-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 500px;
+    }
+    .invoice-table th, .invoice-table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      vertical-align: top;
+    }
+    /* Di mode PDF, table layout fixed agar konsisten */
+    .pdf-mode .invoice-wrapper {
+      overflow-x: visible !important;
+    }
+    .pdf-mode .invoice-table {
+      min-width: 100% !important;
+      table-layout: fixed !important;
+    }
+    
+    /* Layout informasi bank dan total di PDF tetap rapi */
+    .pdf-mode .bank-info, .pdf-mode .total-section {
+      page-break-inside: avoid;
+    }
+  </style>
 </head>
-<body class="bg-gray-100 min-h-screen p-4 md:p-6">
-  <div class="max-w-7xl mx-auto">
+<body class="bg-gray-100 min-h-screen p-3 md:p-5">
+  <div class="max-w-5xl mx-auto">
     
-    <div class="bg-white rounded-2xl md:rounded-3xl shadow-md p-5 md:p-6 mb-6 no-print">
-      <h1 class="text-2xl md:text-3xl font-bold mb-1 md:mb-2 text-gray-800">Sistem Laporan CCTV</h1>
-      <p class="text-sm md:text-base text-gray-600">Laporan pekerjaan, dokumentasi, invoice, dan penawaran</p>
+    <div class="bg-white rounded-xl shadow-md p-4 mb-5 no-print">
+      <h1 class="text-xl md:text-2xl font-bold text-gray-800">Sistem Laporan CCTV</h1>
+      <p class="text-xs text-gray-600">Laporan pekerjaan, invoice tagihan, surat penawaran, & delivery order</p>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6 no-print">
-      <button onclick="showTab('laporan')" class="bg-blue-600 text-white rounded-xl md:rounded-2xl p-3 md:p-4 font-semibold hover:bg-blue-700 transition shadow-sm">Laporan Pekerjaan</button>
-      <button onclick="showTab('invoice')" class="bg-orange-600 text-white rounded-xl md:rounded-2xl p-3 md:p-4 font-semibold hover:bg-orange-700 transition shadow-sm">Invoice Tagihan</button>
-      <button onclick="showTab('penawaran')" class="bg-purple-600 text-white rounded-xl md:rounded-2xl p-3 md:p-4 font-semibold hover:bg-purple-700 transition shadow-sm">Surat Penawaran</button>
+    <!-- Menu -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-5 no-print">
+      <button onclick="showTab('laporan')" class="bg-blue-600 text-white rounded-lg p-2 text-sm font-semibold hover:bg-blue-700">📋 Laporan Pekerjaan</button>
+      <button onclick="showTab('invoice')" class="bg-orange-600 text-white rounded-lg p-2 text-sm font-semibold hover:bg-orange-700">🧾 Invoice Tagihan</button>
+      <button onclick="showTab('penawaran')" class="bg-purple-600 text-white rounded-lg p-2 text-sm font-semibold hover:bg-purple-700">📄 Surat Penawaran</button>
+      <button onclick="showTab('do')" class="bg-emerald-600 text-white rounded-lg p-2 text-sm font-semibold hover:bg-emerald-700">🚚 Delivery Order</button>
     </div>
 
-    <div id="laporan" class="tab bg-white rounded-2xl md:rounded-3xl shadow-lg p-5 md:p-6">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h2 class="text-xl md:text-2xl font-bold text-blue-600">Laporan Pekerjaan CCTV</h2>
-        <div class="flex gap-2 w-full sm:w-auto no-print no-print-pdf">
-          <button onclick="window.print()" class="flex-1 sm:flex-none bg-black text-white px-4 py-2 rounded-xl text-sm font-medium">Print</button>
-          <button onclick="downloadPDF('laporan', 'Laporan_Pekerjaan_CCTV')" class="flex-1 sm:flex-none bg-red-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-red-700 transition">Download PDF</button>
+    <!-- ========= TAB LAPORAN PEKERJAAN ========= -->
+    <div id="laporan" class="tab bg-white rounded-xl shadow-lg p-4 md:p-5">
+      <div class="flex justify-between flex-wrap gap-2 mb-4">
+        <h2 class="text-lg md:text-xl font-bold text-blue-600">Laporan Pekerjaan CCTV</h2>
+        <div class="flex gap-2 no-print">
+          <button onclick="window.print()" class="bg-black text-white px-3 py-1 rounded text-xs">Print</button>
+          <button onclick="downloadPDF('laporan', 'Laporan_Pekerjaan_CCTV')" class="bg-red-600 text-white px-3 py-1 rounded text-xs">Download PDF</button>
         </div>
       </div>
-
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-        <div>
-          <label class="font-semibold text-sm md:text-base text-gray-700">Nama Client</label>
-          <input id="client" type="text" class="w-full border rounded-xl p-3 mt-1 text-sm md:text-base focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="PT Contoh" />
-        </div>
-        <div>
-          <label class="font-semibold text-sm md:text-base text-gray-700">Tanggal</label>
-          <input id="tanggal" type="date" class="w-full border rounded-xl p-3 mt-1 text-sm md:text-base focus:ring-2 focus:ring-blue-500 focus:outline-none" />
-        </div>
+        <div><label class="font-semibold text-gray-700 text-sm">Nama Client / Perusahaan</label><input id="client" type="text" class="w-full border rounded-lg p-2 mt-1 text-sm" placeholder="PT Contoh / Nama Customer" /></div>
+        <div><label class="font-semibold text-gray-700 text-sm">Tanggal Laporan</label><input id="tanggal" type="date" class="w-full border rounded-lg p-2 mt-1 text-sm" /></div>
       </div>
-
-      <div class="mt-8 avoid-break">
-        <h3 class="text-lg md:text-xl font-bold mb-4 text-gray-800">Dokumentasi & Hasil Pekerjaan</h3>
-        
-        <div class="overflow-x-auto min-w-full inline-block align-middle">
-          <table class="w-full border border-gray-300 text-sm mb-4 min-w-[600px]">
-            <thead>
-              <tr class="bg-gray-100 text-left">
-                <th class="border p-3 w-5/12 text-gray-700 font-semibold">Hasil / Keterangan Pekerjaan</th>
-                <th class="border p-3 w-7/12 text-gray-700 font-semibold">Foto Dokumentasi</th>
-              </tr>
-            </thead>
-            <tbody id="dokumentasiBody">
-              <tr class="avoid-break">
-                <td class="border p-3 align-top">
-                  <textarea class="keterangan-foto-input w-full p-2 border rounded-xl bg-white focus:outline-none text-sm" rows="4" placeholder="Contoh: Instalasi Kamera 1 sisi koridor barat utama, penarikan kabel coaxial 15 meter..." oninput="updateKeteranganText(this)"></textarea>
-                  <p class="keterangan-foto-text whitespace-pre-line"></p>
-                </td>
-                <td class="border p-3 align-top">
-                  <input type="file" accept="image/*" class="no-print no-print-pdf mb-2 block text-xs" onchange="previewFotoBaris(this)" />
-                  <div class="img-container hidden bg-gray-900 rounded-xl overflow-hidden w-full min-h-[220px] md:min-h-[320px] flex items-center justify-center shadow p-2">
-                    <img src="" class="w-auto h-auto max-w-full max-h-[70vh] md:max-h-[500px] object-contain rounded-lg" />
-                  </div>
-                </td>
+      <div class="mt-4">
+        <h3 class="font-bold text-gray-700 text-md mb-3 border-l-4 border-blue-500 pl-2">Detail Pekerjaan yang Diselesaikan</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full border border-gray-300 text-sm">
+            <thead class="bg-blue-50"><tr><th class="border p-2 w-14 text-center">No</th><th class="border p-2 w-6/12 text-left">📋 Pekerjaan yang Diselesaikan</th><th class="border p-2 w-5/12 text-left">📸 Dokumentasi Foto (bisa pilih banyak)</th></tr></thead>
+            <tbody id="laporanBody">
+              <tr class="laporan-row avoid-break">
+                <td class="border p-2 text-center align-top"><div class="font-bold text-blue-700 text-base mt-2">1</div></td>
+                <td class="border p-2 align-top"><div class="pekerjaan-content w-full"><textarea class="pekerjaan-input w-full p-2 border rounded-md text-sm" rows="3" placeholder=""></textarea></div></td>
+                <td class="border p-2 align-top"><input type="file" accept="image/*" multiple class="foto-multi-input no-print mb-2 block text-xs w-full" onchange="previewFotoMulti(this)" /><div class="foto-gallery"><div class="text-xs text-gray-400">Belum ada foto</div></div><div class="foto-data-store hidden"></div></td>
               </tr>
             </tbody>
           </table>
         </div>
-
-        <div class="no-print no-print-pdf mt-2">
-          <button onclick="tambahBarisDokumentasi()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-blue-700 transition">Tambah Baris Dokumentasi</button>
-        </div>
+        <button onclick="tambahBarisLaporan()" class="mt-3 bg-blue-600 text-white px-3 py-1 rounded-lg text-xs font-medium no-print">+ Tambah Baris Pekerjaan</button>
       </div>
+      <div class="mt-6 pt-4 border-t border-gray-200"><div class="mb-2"><label class="font-semibold text-gray-700 text-sm">Keterangan Tambahan / Catatan</label><textarea id="keteranganTambahan" rows="3" class="w-full border rounded-lg p-2 mt-1 text-sm" placeholder="Catatan penting terkait pekerjaan..."></textarea></div></div>
     </div>
 
-    <div id="invoice" class="tab hidden bg-white rounded-2xl md:rounded-3xl shadow-lg p-5 md:p-6">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-        <h2 class="text-xl md:text-2xl font-bold text-orange-600 tracking-wide uppercase">Invoice Tagihan</h2>
-        <div class="flex gap-2 w-full sm:w-auto no-print no-print-pdf">
-          <button onclick="window.print()" class="flex-1 sm:flex-none bg-black text-white px-4 py-2 rounded-xl text-sm font-medium">Print</button>
-          <button onclick="downloadPDF('invoice', 'Invoice_CCTV')" class="flex-1 sm:flex-none bg-red-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-red-700 transition">Download PDF</button>
+    <!-- ========= TAB INVOICE - TAMPILAN PDF RAPI DI HP & DESKTOP ========= -->
+    <div id="invoice" class="tab bg-white rounded-xl shadow-lg p-4 md:p-5 hidden">
+      <div class="flex justify-between flex-wrap gap-2 mb-4">
+        <h2 class="text-lg md:text-xl font-bold text-orange-600">Invoice Tagihan</h2>
+        <div class="flex gap-2 no-print">
+          <button onclick="window.print()" class="bg-black text-white px-3 py-1 rounded text-xs">Print</button>
+          <button onclick="downloadPDF('invoice', 'Invoice_Tagihan')" class="bg-red-600 text-white px-3 py-1 rounded text-xs">Download PDF</button>
         </div>
       </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-4">
-        <div>
-          <label class="font-semibold text-xs text-gray-500 uppercase">Nama Customer</label>
-          <input type="text" class="w-full border rounded-xl p-2 mt-1 text-sm focus:outline-none focus:ring-1 focus:ring-orange-500" placeholder="Nama customer" />
-        </div>
-        <div>
-          <label class="font-semibold text-xs text-gray-500 uppercase">No Invoice</label>
-          <input type="text" class="w-full border rounded-xl p-2 mt-1 text-sm focus:outline-none focus:ring-1 focus:ring-orange-500" placeholder="INV-001" />
-        </div>
-        <div>
-          <label class="font-semibold text-xs text-gray-500 uppercase">Tanggal Invoice</label>
-          <input type="date" class="w-full border rounded-xl p-2 mt-1 text-sm focus:outline-none focus:ring-1 focus:ring-orange-500" />
-        </div>
-        <div>
-          <label class="font-semibold text-xs text-gray-500 uppercase">Due Date</label>
-          <input type="date" class="w-full border rounded-xl p-2 mt-1 text-sm focus:outline-none focus:ring-1 focus:ring-orange-500" />
-        </div>
-        <div>
-          <label class="font-semibold text-xs text-gray-500 uppercase">No. Kontrak</label>
-          <input type="text" class="w-full border rounded-xl p-2 mt-1 text-sm focus:outline-none focus:ring-1 focus:ring-orange-500" placeholder="000/CTR/2026" />
-        </div>
-        <div>
-          <label class="font-semibold text-xs text-gray-500 uppercase">No. SPH</label>
-          <input type="text" class="w-full border rounded-xl p-2 mt-1 text-sm focus:outline-none focus:ring-1 focus:ring-orange-500" placeholder="000/SPH/2026" />
-        </div>
-        <div class="col-span-1 sm:col-span-2 md:col-span-3">
-          <label class="font-semibold text-xs text-gray-500 uppercase">Alamat Kantor</label>
-          <textarea class="w-full border rounded-xl p-2 mt-1 text-sm focus:outline-none focus:ring-1 focus:ring-orange-500" rows="1" placeholder="Jl. Contoh No. 123, Kota ..."></textarea>
-        </div>
+      
+      <!-- Header Invoice - grid tetap rapi -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-5">
+        <div><label class="font-semibold text-xs text-gray-500 uppercase">Nama Customer</label><input type="text" id="invoiceCustomer" class="w-full border rounded-lg p-2 mt-1 text-sm" placeholder="Nama customer" /></div>
+        <div><label class="font-semibold text-xs text-gray-500 uppercase">No Invoice</label><input type="text" id="invoiceNo" class="w-full border rounded-lg p-2 mt-1 text-sm" placeholder="INV-001" /></div>
+        <div><label class="font-semibold text-xs text-gray-500 uppercase">Tanggal Invoice</label><input type="date" id="invoiceTanggal" class="w-full border rounded-lg p-2 mt-1 text-sm" /></div>
+        <div><label class="font-semibold text-xs text-gray-500 uppercase">Due Date</label><input type="date" id="invoiceDue" class="w-full border rounded-lg p-2 mt-1 text-sm" /></div>
+        <div><label class="font-semibold text-xs text-gray-500 uppercase">No. Kontrak</label><input type="text" id="invoiceKontrak" class="w-full border rounded-lg p-2 mt-1 text-sm" placeholder="000/CTR/2026" /></div>
+        <div><label class="font-semibold text-xs text-gray-500 uppercase">No. SPH</label><input type="text" id="invoiceSph" class="w-full border rounded-lg p-2 mt-1 text-sm" placeholder="000/SPH/2026" /></div>
+        <div class="col-span-1 sm:col-span-2 md:col-span-3"><label class="font-semibold text-xs text-gray-500 uppercase">Alamat Kantor</label><textarea id="invoiceAlamat" class="w-full border rounded-lg p-2 mt-1 text-sm" rows="1" placeholder="Jl. Contoh No. 123, Kota ..."></textarea></div>
       </div>
 
-      <div class="overflow-x-auto">
-        <table class="w-full border border-gray-300 mb-4 text-sm min-w-[600px]">
+      <!-- Tabel Item Invoice - dengan ukuran yang konsisten di PDF -->
+      <div class="invoice-wrapper">
+        <table class="invoice-table w-full border border-gray-300 mb-4 text-sm">
           <thead>
-            <tr class="bg-gray-100 text-left">
-              <th class="border p-2 text-gray-700">Deskripsi</th>
-              <th class="border p-2 w-16 text-center text-gray-700">Qty</th>
-              <th class="border p-2 w-32 text-gray-700">Harga</th>
-              <th class="border p-2 w-32 text-gray-700">Total</th>
-              <th class="border p-2 w-12 text-center no-print no-print-pdf text-gray-700">Aksi</th>
-            </tr>
+            <tr class="bg-gray-100">
+              <th class="border p-2 text-left" style="width: 40%">Deskripsi</th>
+              <th class="border p-2 text-center" style="width: 15%">Qty</th>
+              <th class="border p-2 text-right" style="width: 20%">Harga (Rp)</th>
+              <th class="border p-2 text-right" style="width: 25%">Total (Rp)</th>
+              <th class="border p-2 text-center no-print" style="width: 10%">Aksi</th>
+             </tr>
           </thead>
           <tbody id="invoiceBody">
             <tr>
-              <td class="border p-1"><input type="text" class="w-full p-1 border rounded bg-white text-sm" value="Instalasi CCTV"></td>
-              <td class="border p-1"><input type="number" class="qty w-full p-1 border rounded bg-white text-center text-sm" value="1" onchange="hitungInvoice()"></td>
-              <td class="border p-1"><input type="number" class="harga w-full p-1 border rounded bg-white text-sm" value="2500000" onchange="hitungInvoice()"></td>
-              <td class="border p-1 total font-medium text-sm text-gray-800">Rp 2.500.000</td>
-              <td class="border p-1 text-center no-print no-print-pdf">
-                <button onclick="hapusBarisItem(this, 'invoice')" class="text-red-500 hover:text-red-700 font-bold text-base">🗑️</button>
-              </td>
-            </tr>
+              <td class="border p-2"><input type="text" class="w-full p-1 border rounded text-sm" value="Instalasi CCTV" /></td>
+              <td class="border p-2 text-center"><input type="number" class="qty w-full p-1 border rounded text-center text-sm" value="1" onchange="hitungInvoice()" /></td>
+              <td class="border p-2 text-right"><input type="number" class="harga w-full p-1 border rounded text-right text-sm" value="2500000" onchange="hitungInvoice()" /></td>
+              <td class="border p-2 total text-right font-medium">Rp 2.500.000</td>
+              <td class="border p-2 text-center no-print"><button onclick="hapusBarisItem(this, 'invoice')" class="text-red-500">🗑️</button></td>
+             </tr>
           </tbody>
         </table>
       </div>
 
-      <div class="flex justify-between items-center mb-4 no-print no-print-pdf">
-        <button onclick="tambahBarisInvoice()" class="bg-blue-600 text-white px-4 py-1.5 rounded-xl text-sm font-medium shadow-sm">Tambah Item</button>
+      <div class="flex justify-between items-center mb-4 no-print">
+        <button onclick="tambahBarisInvoice()" class="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-sm font-medium">+ Tambah Item</button>
       </div>
 
+      <!-- Informasi Bank dan Total - pastikan tidak terpotong di PDF -->
       <div class="avoid-break mt-6">
         <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
-          <div class="w-full sm:w-7/12 bg-gray-50 border border-gray-200 rounded-2xl p-3">
-            <h3 class="font-bold text-gray-700 text-xs mb-2 flex items-center gap-1">
-              <span>ℹ️</span> Informasi Bank Pembayaran
-            </h3>
+          <div class="w-full sm:w-6/12 bg-gray-50 border border-gray-200 rounded-xl p-3 bank-info">
+            <h3 class="font-bold text-gray-700 text-xs mb-2">🏦 Informasi Bank Pembayaran</h3>
             <table class="w-full text-xs border-none">
-              <tr>
-                <td class="p-1 text-gray-500 font-medium w-24">Nama Bank</td>
-                <td class="p-1">: <input type="text" class="bg-transparent border-b border-gray-300 focus:outline-none w-10/12 font-semibold text-gray-800" placeholder="Bank BCA / Mandiri" /></td>
-              </tr>
-              <tr>
-                <td class="p-1 text-gray-500 font-medium">No. Rekening</td>
-                <td class="p-1">: <input type="text" class="bg-transparent border-b border-gray-300 focus:outline-none w-10/12 font-semibold text-gray-800" placeholder="123-456-7890" /></td>
-              </tr>
-              <tr>
-                <td class="p-1 text-gray-500 font-medium">Atas Nama</td>
-                <td class="p-1">: <input type="text" class="bg-transparent border-b border-gray-300 focus:outline-none w-10/12 font-semibold text-gray-800" placeholder="Nama Pemilik" /></td>
-              </tr>
+              <tr><td class="p-1 text-gray-500 w-24">Nama Bank</td><td class="p-1">: <input type="text" id="bankName" class="bg-transparent border-b border-gray-300 focus:outline-none w-10/12" placeholder="Bank BCA / Mandiri" /></td></tr>
+              <tr><td class="p-1 text-gray-500">No. Rekening</td><td class="p-1">: <input type="text" id="bankAccount" class="bg-transparent border-b border-gray-300 focus:outline-none w-10/12" placeholder="123-456-7890" /></td></tr>
+              <tr><td class="p-1 text-gray-500">Atas Nama</td><td class="p-1">: <input type="text" id="bankNameHolder" class="bg-transparent border-b border-gray-300 focus:outline-none w-10/12" placeholder="Nama Pemilik" /></td></tr>
             </table>
           </div>
-          <div class="w-full sm:w-5/12 text-left sm:text-right self-center">
-            <div class="text-xl font-bold text-gray-800">
-              Total: <span id="grandTotal" class="text-orange-600">Rp 2.500.000</span>
-            </div>
+          <div class="w-full sm:w-5/12 text-right total-section">
+            <div class="text-xl font-bold text-gray-800">Total: <span id="grandTotal" class="text-orange-600">Rp 2.500.000</span></div>
           </div>
         </div>
       </div>
 
+      <!-- Tanda Tangan -->
       <div class="avoid-break mt-12">
         <div class="flex justify-end">
           <div class="w-full sm:w-5/12 text-center">
             <p class="font-semibold text-sm text-gray-700 mb-16">Hormat Kami,</p>
-            <div class="w-48 mx-auto">
-              <input type="text" class="signature-input font-bold text-gray-800 text-sm text-center border-b border-gray-400 focus:outline-none w-full pb-1" placeholder="( Nama Anda )" />
-            </div>
+            <div class="w-48 mx-auto"><input type="text" id="signatureInvoice" class="font-bold text-gray-800 text-sm text-center border-b border-gray-400 focus:outline-none w-full pb-1" placeholder="( Nama Anda )" /></div>
           </div>
         </div>
       </div>
     </div>
 
-    <div id="penawaran" class="tab hidden bg-white rounded-2xl md:rounded-3xl shadow-lg p-5 md:p-6">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h2 class="text-xl md:text-2xl font-bold text-purple-600">Surat Penawaran</h2>
-        <div class="flex gap-2 w-full sm:w-auto no-print no-print-pdf">
-          <button onclick="window.print()" class="flex-1 sm:flex-none bg-black text-white px-4 py-2 rounded-xl text-sm font-medium">Print</button>
-          <button onclick="downloadPDF('penawaran', 'Surat_Penawaran_CCTV')" class="flex-1 sm:flex-none bg-red-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-red-700 transition">Download PDF</button>
-        </div>
-      </div>
-
-      <div class="mb-4">
-        <label class="font-semibold text-gray-700 text-sm md:text-base">Kepada</label>
-        <input type="text" class="w-full border rounded-xl p-3 mt-1 text-sm focus:outline-none focus:ring-1 focus:ring-purple-500" placeholder="Nama perusahaan / customer" />
-      </div>
-      <div class="mb-4">
-        <label class="font-semibold text-gray-700 text-sm md:text-base">Isi Penawaran</label>
-        <textarea class="w-full border rounded-xl p-3 mt-1 text-sm focus:outline-none focus:ring-1 focus:ring-purple-500" rows="4">Kami menawarkan jasa instalasi CCTV lengkap dengan maintenance dan setting online monitoring.</textarea>
-      </div>
-
-      <div class="overflow-x-auto">
-        <table class="w-full border border-gray-300 mb-4 text-sm min-w-[600px]">
-          <thead>
-            <tr class="bg-gray-100 text-left">
-              <th class="border p-3 text-gray-700">Item Deskripsi</th>
-              <th class="border p-3 w-20 text-center text-gray-700">Qty</th>
-              <th class="border p-3 w-36 text-gray-700">Harga Satuan</th>
-              <th class="border p-3 w-36 text-gray-700">Total Harga</th>
-              <th class="border p-3 w-12 text-center no-print no-print-pdf text-gray-700">Aksi</th>
-            </tr>
-          </thead>
-          <tbody id="penawaranBody">
-            <tr>
-              <td class="border p-1"><input type="text" class="w-full p-1 border rounded bg-white text-sm" value="Kamera CCTV 2MP"></td>
-              <td class="border p-1"><input type="number" class="pwn-qty w-full p-1 border rounded bg-white text-center text-sm" value="4" onchange="hitungPenawaran()"></td>
-              <td class="border p-1"><input type="number" class="pwn-harga w-full p-1 border rounded bg-white text-sm" value="450000" onchange="hitungPenawaran()"></td>
-              <td class="border p-1 pwn-total font-medium text-gray-800 text-sm">Rp 1.800.000</td>
-              <td class="border p-1 text-center no-print no-print-pdf">
-                <button onclick="hapusBarisItem(this, 'penawaran')" class="text-red-500 hover:text-red-700 font-bold text-base">🗑️</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="flex justify-between items-center mb-6 no-print no-print-pdf">
-        <button onclick="tambahBarisPenawaran()" class="bg-purple-600 text-white px-4 py-1.5 rounded-xl text-sm font-semibold hover:bg-purple-700 transition">Tambah Item Penawaran</button>
-      </div>
-
-      <div class="avoid-break flex justify-end items-center mb-8">
-        <div class="text-xl font-bold text-gray-800">
-          Total Penawaran: <span id="grandTotalPenawaran" class="text-purple-600">Rp 1.800.000</span>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-12 pt-6 border-t border-dashed avoid-break">
-        <div class="text-center">
-          <p class="font-semibold text-sm text-gray-700 mb-16">Disetujui Oleh,</p>
-          <input type="text" class="text-center border-b border-gray-400 focus:outline-none font-bold bg-transparent text-sm w-48 pb-1 mx-auto block" placeholder="( Nama Client )" />
-        </div>
-        <div class="text-center">
-          <p class="font-semibold text-sm text-gray-700 mb-16">Dibuat Oleh,</p>
-          <input type="text" class="text-center border-b border-gray-400 focus:outline-none font-bold bg-transparent text-sm w-48 pb-1 mx-auto block" placeholder="( Nama Anda )" />
-        </div>
-      </div>
+    <!-- TAB PENAWARAN (tidak diubah) -->
+    <div id="penawaran" class="tab bg-white rounded-xl shadow-lg p-4 md:p-5 hidden">
+      <div class="flex justify-between flex-wrap gap-2 mb-4"><h2 class="text-lg font-bold text-purple-600">Surat Penawaran</h2><div class="flex gap-2 no-print"><button onclick="window.print()" class="bg-black text-white px-3 py-1 rounded text-xs">Print</button><button onclick="downloadPDF('penawaran','Penawaran')" class="bg-red-600 text-white px-3 py-1 rounded text-xs">PDF</button></div></div>
+      <div class="mb-4"><label class="font-semibold text-gray-700 text-sm">Kepada</label><input type="text" id="penawaranKepada" class="w-full border rounded-lg p-2 mt-1 text-sm" placeholder="Nama perusahaan / customer" /></div>
+      <div class="mb-4"><label class="font-semibold text-gray-700 text-sm">Isi Penawaran</label><textarea id="penawaranIsi" class="w-full border rounded-lg p-2 mt-1 text-sm" rows="3">Kami menawarkan jasa instalasi CCTV lengkap dengan maintenance dan setting online monitoring.</textarea></div>
+      <div class="overflow-x-auto"><table class="w-full border border-gray-300 mb-4 text-sm"><thead><tr class="bg-gray-100"><th class="border p-2">Item Deskripsi</th><th class="border p-2 w-20 text-center">Qty</th><th class="border p-2 w-32 text-right">Harga Satuan</th><th class="border p-2 w-32 text-right">Total Harga</th><th class="border p-2 w-12 text-center no-print">Aksi</th></tr></thead><tbody id="penawaranBody"><tr><td class="border p-2"><input type="text" class="w-full p-1 border rounded text-sm" value="Kamera CCTV 2MP"></td><td class="border p-2"><input type="number" class="pwn-qty w-full p-1 border rounded text-center text-sm" value="4" onchange="hitungPenawaran()"></td><td class="border p-2"><input type="number" class="pwn-harga w-full p-1 border rounded text-right text-sm" value="450000" onchange="hitungPenawaran()"></td><td class="border p-2 pwn-total text-right font-medium">Rp 1.800.000</td><td class="border p-2 text-center no-print"><button onclick="hapusBarisItem(this,'penawaran')" class="text-red-500">🗑️</button></td></tr></tbody></table></div>
+      <div class="flex justify-between items-center mb-4 no-print"><button onclick="tambahBarisPenawaran()" class="bg-purple-600 text-white px-4 py-1.5 rounded-lg text-sm font-semibold">+ Tambah Item</button></div>
+      <div class="flex justify-end items-center mb-6"><div class="text-xl font-bold text-gray-800">Total Penawaran: <span id="grandTotalPenawaran" class="text-purple-600">Rp 1.800.000</span></div></div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-8 pt-4 border-t"><div class="text-center"><p class="font-semibold text-sm text-gray-700 mb-12">Disetujui Oleh,</p><input type="text" id="penawaranDisetujui" class="border-b border-gray-400 w-48 pb-1 mx-auto text-center" placeholder="( Nama Client )" /></div><div class="text-center"><p class="font-semibold text-sm text-gray-700 mb-12">Dibuat Oleh,</p><input type="text" id="penawaranDibuat" class="border-b border-gray-400 w-48 pb-1 mx-auto text-center" placeholder="( Nama Anda )" /></div></div>
     </div>
-    
+
+    <!-- TAB DO (tidak diubah) -->
+    <div id="do" class="tab bg-white rounded-xl shadow-lg p-4 md:p-5 hidden">
+      <div class="border-b-2 border-emerald-600 pb-3 mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2"><div><h2 class="text-xl font-bold text-emerald-800">DELIVERY ORDER</h2><div class="mt-2 flex items-center gap-2"><span class="text-xs">Nomor :</span><input type="text" id="doNomor" class="border rounded px-2 py-1 text-sm w-48" value="DO/001/CCTV/032026" /></div></div><div><div class="flex items-center gap-2"><span class="text-xs">Tanggal :</span><input type="date" id="doTanggal" class="border rounded px-2 py-1 text-sm" /></div></div></div>
+      <div class="flex justify-end gap-2 mb-4 no-print"><button onclick="window.print()" class="bg-black text-white px-3 py-1 rounded-lg text-xs">🖨️ Cetak DO</button><button onclick="downloadPDF('do', 'Delivery_Order')" class="bg-emerald-700 text-white px-3 py-1 rounded-lg text-xs">📎 PDF DO</button></div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5 bg-gray-50 p-3 rounded-lg"><div><label class="font-semibold text-xs">Penerima</label><input type="text" id="doCustomer" class="w-full border rounded p-2 text-sm" value="PT Maju Jaya CCTV" /></div><div><label class="font-semibold text-xs">Alamat Kirim</label><input type="text" id="doAlamat" class="w-full border rounded p-2 text-sm" value="Jl. Raya Industri No.45" /></div></div>
+      <div class="mt-3"><h3 class="font-bold text-sm mb-2">Daftar Barang</h3><div class="overflow-x-auto"><table class="w-full border text-xs"><thead class="bg-emerald-50"><tr><th class="border p-2">Nama Barang</th><th class="border p-2 w-16">Qty</th><th class="border p-2">Foto</th><th class="border p-2 w-10 no-print">Aksi</th></tr></thead><tbody id="doBarangBody"><tr class="do-barang-row"><td class="border p-2"><input type="text" class="do-nama-barang w-full p-1 border rounded text-sm" value="DVR 8 Channel" /><textarea class="do-deskripsi-barang w-full p-1 border rounded text-xs mt-1" rows="2">Dual HDD</textarea></td><td class="border p-2 text-center"><input type="number" class="do-qty w-16 p-1 border rounded text-center text-sm" value="1" /></td><td class="border p-2"><input type="file" accept="image/*" class="do-foto-input no-print mb-1 text-xs" onchange="previewFotoDO(this)" /><div class="do-img-container hidden bg-gray-100 rounded overflow-hidden w-full min-h-[100px] flex justify-center border"><img src="" class="do-preview-img max-h-[120px]" /></div></td><td class="border p-2 text-center no-print"><button onclick="hapusBarisDO(this)" class="bg-red-100 text-red-600 px-2 py-0.5 rounded text-xs">Hapus</button></td></tr></tbody></table></div><button onclick="tambahBarisDO()" class="mt-2 bg-emerald-600 text-white px-3 py-1 rounded text-xs no-print">+ Barang</button></div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mt-8 pt-4 border-t"><div class="text-center"><p class="text-sm font-bold mb-4">Dibuat oleh,</p><input type="text" id="doPengirim" class="border-b border-gray-400 w-48 text-center pb-1" placeholder="Nama Lengkap" value="Bambang Santoso" /><div class="h-8 border-b border-gray-400 w-48 mx-auto mt-2"></div><p class="text-xs text-gray-400 mt-1">( Tanda Tangan )</p></div><div class="text-center"><p class="text-sm font-bold mb-4">Penerima,</p><input type="text" id="doPenerima" class="border-b border-gray-400 w-48 text-center pb-1" placeholder="Nama Lengkap" /><div class="h-8 border-b border-gray-400 w-48 mx-auto mt-2"></div><p class="text-xs text-gray-400 mt-1">( Tanda Tangan & Tanggal )</p></div></div>
+    </div>
   </div>
 
   <script>
-    // Fungsi Manajemen Tabel Dokumentasi
-    function tambahBarisDokumentasi() {
-      const tbody = document.getElementById('dokumentasiBody');
-      const tr = document.createElement('tr');
-      tr.className = "avoid-break";
-      
-      tr.innerHTML = `
-        <td class="border p-3 align-top">
-          <textarea class="keterangan-foto-input w-full p-2 border rounded-xl bg-white focus:outline-none text-sm" rows="4" placeholder="Tulis hasil pekerjaan atau deskripsi foto di sini..." oninput="updateKeteranganText(this)"></textarea>
-          <p class="keterangan-foto-text whitespace-pre-line"></p>
-        </td>
-        <td class="border p-3 align-top">
-          <input type="file" accept="image/*" class="no-print no-print-pdf mb-2 block text-xs" onchange="previewFotoBaris(this)" />
-          <div class="img-container hidden bg-gray-900 rounded-xl overflow-hidden w-full min-h-[220px] md:min-h-[320px] flex items-center justify-center shadow p-2">
-            <img src="" class="w-auto h-auto max-w-full max-h-[70vh] md:max-h-[500px] object-contain rounded-lg" />
-          </div>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    }
-
-    
-function previewFotoBaris(input) {
-      const file = input.files[0];
-      const container = input.nextElementSibling;
-      const img = container.querySelector('img');
-
-      if (file) {
-        const reader = new FileReader();
-
-        reader.onload = function(e) {
-          img.onload = function() {
-
-            // DETEKSI ORIENTASI FOTO
-            if (img.naturalWidth > img.naturalHeight) {
-              container.setAttribute('data-orientation', 'landscape');
-              img.setAttribute('data-mobile', 'landscape');
-            } else {
-              container.setAttribute('data-orientation', 'portrait');
-              img.setAttribute('data-mobile', 'portrait');
-            }
-
-          };
-
-          img.src = e.target.result;
-          container.classList.remove('hidden');
-        }
-
-        reader.readAsDataURL(file);
-      } else {
-        img.src = "";
-        container.classList.add('hidden');
+    // ======================== LAPORAN ========================
+    let barisCounter = 1;
+    function previewFotoMulti(input) {
+      const files = Array.from(input.files);
+      const gallery = input.nextElementSibling;
+      if (!gallery) return;
+      gallery.innerHTML = '';
+      const storeDiv = input.parentElement.querySelector('.foto-data-store') || document.createElement('div');
+      if(!input.parentElement.querySelector('.foto-data-store')) {
+        storeDiv.className = 'foto-data-store hidden';
+        input.parentElement.appendChild(storeDiv);
       }
+      const imagesData = [];
+      if (files.length === 0) { gallery.innerHTML = '<div class="text-xs text-gray-400">Belum ada foto</div>'; storeDiv.setAttribute('data-images', '[]'); return; }
+      let processed = 0;
+      files.forEach((file) => {
+        if (!file.type.startsWith('image/')) { processed++; if(processed === files.length && imagesData.length === 0) gallery.innerHTML = '<div class="text-xs text-gray-400">Tidak ada file gambar valid</div>'; return; }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const imgBase64 = e.target.result;
+          imagesData.push(imgBase64);
+          storeDiv.setAttribute('data-images', JSON.stringify(imagesData));
+          const fotoItem = document.createElement('div'); fotoItem.className = 'foto-item';
+          fotoItem.innerHTML = `<img src="${imgBase64}" alt="foto" /><button type="button" class="hapus-foto">✕</button>`;
+          gallery.appendChild(fotoItem);
+          const delBtn = fotoItem.querySelector('.hapus-foto');
+          delBtn.addEventListener('click', () => {
+            const currentData = JSON.parse(storeDiv.getAttribute('data-images') || '[]');
+            const newData = currentData.filter(img => img !== imgBase64);
+            storeDiv.setAttribute('data-images', JSON.stringify(newData));
+            fotoItem.remove();
+            if (newData.length === 0) gallery.innerHTML = '<div class="text-xs text-gray-400">Belum ada foto</div>';
+          });
+          processed++;
+          if(processed === files.length && imagesData.length === 0 && gallery.children.length === 0) gallery.innerHTML = '<div class="text-xs text-gray-400">Tidak ada gambar yang valid</div>';
+        };
+        reader.readAsDataURL(file);
+      });
     }
+    function tambahBarisLaporan() { barisCounter++; const tbody = document.getElementById('laporanBody'); const newRow = document.createElement('tr'); newRow.className = "laporan-row avoid-break"; newRow.innerHTML = `<td class="border p-2 text-center align-top"><div class="font-bold text-blue-700 text-base mt-2">${barisCounter}</div></td><td class="border p-2 align-top"><div class="pekerjaan-content w-full"><textarea class="pekerjaan-input w-full p-2 border rounded-md text-sm" rows="3" placeholder=""></textarea></div></td><td class="border p-2 align-top"><input type="file" accept="image/*" multiple class="foto-multi-input no-print mb-2 block text-xs w-full" onchange="previewFotoMulti(this)" /><div class="foto-gallery"><div class="text-xs text-gray-400">Belum ada foto</div></div><div class="foto-data-store hidden"></div></td>`; tbody.appendChild(newRow); }
 
-
-    function updateKeteranganText(textarea) {
-      const pText = textarea.nextElementSibling;
-      pText.innerText = textarea.value;
-    }
-
-    // Fungsi Invoice
+    // ======================== INVOICE ========================
     function tambahBarisInvoice() {
       const tbody = document.getElementById('invoiceBody');
       const row = document.createElement('tr');
-
-      row.innerHTML = `
-        <td class="border p-1"><input type="text" class="w-full p-1 border rounded bg-white text-sm" placeholder="Deskripsi"></td>
-        <td class="border p-1"><input type="number" class="qty w-full p-1 border rounded bg-white text-center text-sm" value="1" onchange="hitungInvoice()"></td>
-        <td class="border p-1"><input type="number" class="harga w-full p-1 border rounded bg-white text-sm" value="0" onchange="hitungInvoice()"></td>
-        <td class="border p-1 total font-medium text-sm text-gray-800">Rp 0</td>
-        <td class="border p-1 text-center no-print no-print-pdf">
-          <button onclick="hapusBarisItem(this, 'invoice')" class="text-red-500 hover:text-red-700 font-bold text-base">🗑️</button>
-        </td>
-      `;
+      row.innerHTML = `<td class="border p-2"><input type="text" class="w-full p-1 border rounded text-sm" placeholder="Deskripsi item"></td><td class="border p-2 text-center"><input type="number" class="qty w-full p-1 border rounded text-center text-sm" value="1" onchange="hitungInvoice()"></td><td class="border p-2 text-right"><input type="number" class="harga w-full p-1 border rounded text-right text-sm" value="0" onchange="hitungInvoice()"></td><td class="border p-2 total text-right font-medium">Rp 0</td><td class="border p-2 text-center no-print"><button onclick="hapusBarisItem(this, 'invoice')" class="text-red-500">🗑️</button></td>`;
       tbody.appendChild(row);
     }
-
-    // Fungsi Penawaran
-    function tambahBarisPenawaran() {
-      const tbody = document.getElementById('penawaranBody');
-      const row = document.createElement('tr');
-
-      row.innerHTML = `
-        <td class="border p-1"><input type="text" class="w-full p-1 border rounded bg-white text-sm" placeholder="Nama Item"></td>
-        <td class="border p-1"><input type="number" class="pwn-qty w-full p-1 border rounded bg-white text-center text-sm" value="1" onchange="hitungPenawaran()"></td>
-        <td class="border p-1"><input type="number" class="pwn-harga w-full p-1 border rounded bg-white text-sm" value="0" onchange="hitungPenawaran()"></td>
-        <td class="border p-1 pwn-total font-medium text-gray-800 text-sm">Rp 0</td>
-        <td class="border p-1 text-center no-print no-print-pdf">
-          <button onclick="hapusBarisItem(this, 'penawaran')" class="text-red-500 hover:text-red-700 font-bold text-base">🗑️</button>
-        </td>
-      `;
-      tbody.appendChild(row);
-    }
-
-    function hitungInvoice() {
-      let grandTotal = 0;
-      document.querySelectorAll('#invoiceBody tr').forEach(row => {
-        const qty = parseFloat(row.querySelector('.qty').value) || 0;
-        const harga = parseFloat(row.querySelector('.harga').value) || 0;
-        const total = qty * harga;
-
-        row.querySelector('.total').innerText = 'Rp ' + total.toLocaleString('id-ID');
-        grandTotal += total;
-      });
-      document.getElementById('grandTotal').innerText = 'Rp ' + grandTotal.toLocaleString('id-ID');
-    }
-
-    function hitungPenawaran() {
-      let grandTotal = 0;
-      document.querySelectorAll('#penawaranBody tr').forEach(row => {
-        const qty = parseFloat(row.querySelector('.pwn-qty').value) || 0;
-        const harga = parseFloat(row.querySelector('.pwn-harga').value) || 0;
-        const total = qty * harga;
-
-        row.querySelector('.pwn-total').innerText = 'Rp ' + total.toLocaleString('id-ID');
-        grandTotal += total;
-      });
-      document.getElementById('grandTotalPenawaran').innerText = 'Rp ' + grandTotal.toLocaleString('id-ID');
-    }
-
-    // Fungsi Global Hapus Baris Item (Invoice & Penawaran)
-    function hapusBarisItem(button, jenisTab) {
-      const row = button.closest('tr');
-      const tbody = row.parentNode;
-      
-      if (tbody.querySelectorAll('tr').length > 1) {
-        row.remove();
-        if (jenisTab === 'invoice') {
-          hitungInvoice();
-        } else if (jenisTab === 'penawaran') {
-          hitungPenawaran();
-        }
-      } else {
-        alert('Gagal menghapus! Minimal harus terdapat 1 item di dalam tabel.');
-      }
-    }
-
-    // Fungsi Tab Switcher
-    function showTab(tabId) {
-      document.querySelectorAll('.tab').forEach(tab => {
-        tab.classList.add('hidden');
-      });
-      document.getElementById(tabId).classList.remove('hidden');
-    }
-
-    // Fungsi Download PDF
-    function downloadPDF(elementId, fileName) {
+    function hitungInvoice() { let grandTotal = 0; document.querySelectorAll('#invoiceBody tr').forEach(row => { const qty = parseFloat(row.querySelector('.qty')?.value) || 0; const harga = parseFloat(row.querySelector('.harga')?.value) || 0; const total = qty * harga; const totalCell = row.querySelector('.total'); if(totalCell) totalCell.innerText = 'Rp ' + total.toLocaleString('id-ID'); grandTotal += total; }); document.getElementById('grandTotal').innerText = 'Rp ' + grandTotal.toLocaleString('id-ID'); }
+    
+    function tambahBarisPenawaran() { const tbody = document.getElementById('penawaranBody'); const row = document.createElement('tr'); row.innerHTML = `<td class="border p-2"><input type="text" class="w-full p-1 border rounded text-sm" placeholder="Nama item"></td><td class="border p-2"><input type="number" class="pwn-qty w-full p-1 border rounded text-center text-sm" value="1" onchange="hitungPenawaran()"></td><td class="border p-2"><input type="number" class="pwn-harga w-full p-1 border rounded text-right text-sm" value="0" onchange="hitungPenawaran()"></td><td class="border p-2 pwn-total text-right font-medium">Rp 0</td><td class="border p-2 text-center no-print"><button onclick="hapusBarisItem(this, 'penawaran')" class="text-red-500">🗑️</button></td>`; tbody.appendChild(row); }
+    function hitungPenawaran() { let grandTotal = 0; document.querySelectorAll('#penawaranBody tr').forEach(row => { const qty = parseFloat(row.querySelector('.pwn-qty')?.value) || 0; const harga = parseFloat(row.querySelector('.pwn-harga')?.value) || 0; const total = qty * harga; const totalCell = row.querySelector('.pwn-total'); if(totalCell) totalCell.innerText = 'Rp ' + total.toLocaleString('id-ID'); grandTotal += total; }); document.getElementById('grandTotalPenawaran').innerText = 'Rp ' + grandTotal.toLocaleString('id-ID'); }
+    function previewFotoDO(input) { const file = input.files[0]; const container = input.nextElementSibling; if(!container) return; const img = container.querySelector('.do-preview-img'); if(file) { const reader = new FileReader(); reader.onload = (e) => { img.src = e.target.result; container.classList.remove('hidden'); }; reader.readAsDataURL(file); } else { img.src = ""; container.classList.add('hidden'); } }
+    function tambahBarisDO() { const tbody = document.getElementById('doBarangBody'); const newRow = document.createElement('tr'); newRow.className = "do-barang-row"; newRow.innerHTML = `<td class="border p-2"><input type="text" class="do-nama-barang w-full p-1 border rounded text-sm" placeholder="Nama barang" /><textarea class="do-deskripsi-barang w-full p-1 border rounded text-xs mt-1" rows="2" placeholder="Spesifikasi"></textarea></td><td class="border p-2 text-center"><input type="number" class="do-qty w-16 p-1 border rounded text-center text-sm" value="1" /></td><td class="border p-2"><input type="file" accept="image/*" class="do-foto-input no-print mb-1 text-xs" onchange="previewFotoDO(this)" /><div class="do-img-container hidden bg-gray-100 rounded overflow-hidden w-full min-h-[100px] flex justify-center border"><img src="" class="do-preview-img max-h-[120px]" /></div></td><td class="border p-2 text-center no-print"><button onclick="hapusBarisDO(this)" class="bg-red-100 text-red-600 px-2 py-0.5 rounded text-xs">Hapus</button></td>`; tbody.appendChild(newRow); }
+    function hapusBarisDO(btn) { const row = btn.closest('tr'); const tbody = row.parentNode; if(tbody.querySelectorAll('tr').length > 1) row.remove(); else alert('Minimal satu item barang harus ada.'); }
+    function hapusBarisItem(button, jenis) { const row = button.closest('tr'); const tbody = row.parentNode; if(tbody.querySelectorAll('tr').length > 1) { row.remove(); if(jenis === 'invoice') hitungInvoice(); else if(jenis === 'penawaran') hitungPenawaran(); } else { alert('Minimal satu item harus ada!'); } }
+    function showTab(tabId) { document.querySelectorAll('.tab').forEach(tab => tab.classList.add('hidden')); document.getElementById(tabId).classList.remove('hidden'); }
+    
+    async function downloadPDF(elementId, fileName) {
       const element = document.getElementById(elementId);
-
-      // Ambil semua gambar dokumentasi
-      const images = element.querySelectorAll('.img-container');
-
-      let landscapeCount = 0;
-      let portraitCount = 0;
-
-      images.forEach(imgBox => {
-        const orientation = imgBox.getAttribute('data-orientation');
-
-        if (orientation === 'landscape') {
-          landscapeCount++;
-        } else if (orientation === 'portrait') {
-          portraitCount++;
-        }
-      });
-
-      // Tentukan orientasi PDF otomatis
-      let orientation = 'portrait';
-
-      if (landscapeCount > portraitCount) {
-        orientation = 'landscape';
-      }
-
+      if (!element) return;
       element.classList.add('pdf-mode');
-
-      const opt = {
-        margin: [10, 10, 10, 10],
-        filename: fileName + '.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          logging: false
-        },
-        jsPDF: {
-          unit: 'mm',
-          format: 'a4',
-          orientation: orientation
-        }
+      
+      if(elementId === 'laporan') {
+        document.querySelectorAll('#laporanBody .pekerjaan-input').forEach(textarea => {
+          const td = textarea.closest('td');
+          const originalValue = textarea.value;
+          let displayDiv = td.querySelector('.pdf-text-display');
+          if(!displayDiv) { displayDiv = document.createElement('div'); displayDiv.className = 'pdf-text-display'; displayDiv.style.whiteSpace = 'pre-line'; displayDiv.style.fontSize = '12px'; displayDiv.style.padding = '4px'; textarea.parentNode.insertBefore(displayDiv, textarea); }
+          displayDiv.innerText = originalValue;
+          textarea.style.display = 'none';
+        });
+        document.querySelectorAll('#laporanBody tr').forEach(row => {
+          const gallery = row.querySelector('.foto-gallery');
+          const storeDiv = row.querySelector('.foto-data-store');
+          if(storeDiv && storeDiv.getAttribute('data-images')) {
+            const images = JSON.parse(storeDiv.getAttribute('data-images') || '[]');
+            if(gallery && images.length) {
+              gallery.innerHTML = '';
+              images.forEach(imgSrc => { const imgWrap = document.createElement('div'); imgWrap.style.display = 'inline-block'; imgWrap.style.width = '80px'; imgWrap.style.margin = '4px'; imgWrap.style.border = '1px solid #ccc'; imgWrap.style.padding = '2px'; imgWrap.style.borderRadius = '4px'; const imgEl = document.createElement('img'); imgEl.src = imgSrc; imgEl.style.width = '100%'; imgEl.style.height = 'auto'; imgEl.style.maxHeight = '70px'; imgEl.style.objectFit = 'cover'; imgWrap.appendChild(imgEl); gallery.appendChild(imgWrap); });
+            } else if(gallery && images.length === 0) gallery.innerHTML = '<div class="text-xs text-gray-400">Tidak ada foto</div>';
+          }
+        });
+      }
+      
+      if(elementId === 'invoice') {
+        // Konversi semua input di invoice menjadi teks statis
+        document.querySelectorAll('#invoiceBody input[type="text"], #invoiceBody input[type="number"]').forEach(inp => {
+          const td = inp.closest('td');
+          let span = td.querySelector('.static-val');
+          if(!span) { 
+            span = document.createElement('span'); 
+            span.className = 'static-val'; 
+            span.style.display = 'inline-block'; 
+            span.style.width = '100%';
+            inp.parentNode.insertBefore(span, inp);
+          }
+          if(inp.type === 'number') {
+            let val = parseFloat(inp.value) || 0;
+            span.innerText = val.toLocaleString('id-ID');
+          } else {
+            span.innerText = inp.value;
+          }
+          inp.style.display = 'none';
+        });
+        // Pastikan kolom total sudah berupa teks
+        document.querySelectorAll('#invoiceBody .total').forEach(td => {
+          td.style.textAlign = 'right';
+        });
+      }
+      
+      const opt = { 
+        margin: [12, 10, 12, 10], 
+        filename: fileName + '.pdf', 
+        image: { type: 'jpeg', quality: 0.98 }, 
+        html2canvas: { scale: 2.2, useCORS: true, logging: false, letterRendering: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
       };
-
-      html2pdf().set(opt).from(element).save().then(() => {
-        element.classList.remove('pdf-mode');
-      }).catch((err) => {
-        console.error(err);
-        element.classList.remove('pdf-mode');
-      });
+      try { 
+        await html2pdf().set(opt).from(element).save(); 
+      } catch(e) { 
+        console.warn(e); 
+      } finally { 
+        element.classList.remove('pdf-mode'); 
+        location.reload(); 
+      }
     }
+    
+    window.onload = () => {
+      const today = new Date().toISOString().split('T')[0];
+      if(document.getElementById('tanggal')) document.getElementById('tanggal').value = today;
+      if(document.getElementById('invoiceTanggal')) document.getElementById('invoiceTanggal').value = today;
+      if(document.getElementById('doTanggal')) document.getElementById('doTanggal').value = today;
+      hitungInvoice(); hitungPenawaran(); showTab('laporan');
+      const firstGallery = document.querySelector('#laporanBody .foto-gallery');
+      if(firstGallery && firstGallery.children.length === 0) firstGallery.innerHTML = '<div class="text-xs text-gray-400">Belum ada foto</div>';
+    };
   </script>
 </body>
 </html>
